@@ -9,7 +9,7 @@ function med (val) {
 
 const MedicionSchema = new mongoose.Schema ({
 
-    mac : {
+    macSensor : {
         type: String,
         default: "00:00:00:00:00:00",
         required: true,
