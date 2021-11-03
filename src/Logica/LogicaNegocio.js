@@ -24,16 +24,12 @@
   * conexionDB () -->
   * 
   */
-
  const conexionDB = async () => {
     try {
        
         const DB = await mongoose.connect('mongodb://localhost:27017/airlity', { useUnifiedTopology: true, 
         useNewUrlParser: true});
         console.log("Conectado con Mongo, ", DB.connection.name);
-        mongoose.connection.on('error', err => {
-            logError(err);
-          });
        
     } catch (error) {
         console.log(error);
@@ -89,6 +85,7 @@ module.exports = class LogicaNegocio {
             console.log(medicion.medida)
 
                 var res = await this.guardarMedicion(medicion)
+
                 console.log(i)
                 if(res == 400){
                     return res;
@@ -126,7 +123,7 @@ module.exports = class LogicaNegocio {
      * 
      */
     async guardarMedicion( req ) {
-        console.log(req.macSensor)
+        console.log(req)
         
         try {
             // Si creamos una lista con el mismo nombre que las clables del json, se añaden los valores automáticamente a cada variable            
@@ -136,8 +133,13 @@ module.exports = class LogicaNegocio {
                      humedad:req.humedad, fecha:req.fecha, lat:req.latitud, lng: req.longitud } );
                 console.log(nuevaMedicion)
                 
-                
                 await nuevaMedicion.save();
+
+                var res = await this.actualizarFechaUltimaMedicionSensor(req.macSensor, req.fecha);
+
+                if(res == 400){
+                    console.log("Error actualizando la ultima fecha del sensor");
+                }
 
                 return 200
 
@@ -423,7 +425,7 @@ module.exports = class LogicaNegocio {
      * realiza una operación de consulta a la tabla Sensores de la bd y recupera todos los valores guardados.
      * 
      * @return Devuelve una lista de JSON. En caso de producirse un error durante la consulta,
-     *  devuelve el tipo de error producido.
+     *  devuelve 400.
      * 
      * obtenerTodosLosSensores() -->
      * lista [JSON  <-
@@ -448,6 +450,41 @@ module.exports = class LogicaNegocio {
           }
        
     } // ()
+
+
+
+    /**
+     * obtenerTodosLosSensores()
+     * Descripción:
+     * realiza una actualización de la fecha de registro de la última medida hecha por el sensor, filtrando por su MAC.
+     * 
+     * 
+     * @param mac Texto con la MAC del sensor a buscar
+     * @param fecha N de la fecha en milisegundos en la que registró la medición
+     * 
+     * @return Devuelve un JSON. En caso de producirse un error durante la consulta,
+     *  devuelve 400.
+     * 
+     * mac:Texto,
+       fechaMedicion:N -> actualizarFechaUltimaMedicionSensor() ->
+       respuesta: 200 || 400
+     */
+    async actualizarFechaUltimaMedicionSensor(mac, fecha){
+        try {
+
+            console.log("Entra en actualizarFechaUltimaMedicionSensor");
+            //invocamos el metodo find() excluiendo los campos que pone mongodb por defecto _id y __v: .select(['-_id', '-__v')
+            const sensor = await Sensor.findOneAndUpdate({macSensor: String(mac)}, {fechaUltimaMedicion: fecha}, {
+                new: false, //no quiero que devuelva el valor actualizado
+                upsert: false //no quiero insertar solo la mac y la fecha si no lo encuentra
+              });
+            console.log("hecho");
+            return 200
+          } catch (error) {
+            console.log("Error: " + error);
+            return 400
+          }
+    }
 
 
 }// class()
