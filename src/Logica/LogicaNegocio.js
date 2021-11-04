@@ -133,8 +133,10 @@ module.exports = class LogicaNegocio {
                      humedad:req.humedad, fecha:req.fecha, lat:req.latitud, lng: req.longitud } );
                 console.log(nuevaMedicion)
                 
+                //Guardamos la nueva medición
                 await nuevaMedicion.save();
 
+                //Ahora aprovechamos para actualizar la fecha de la última medición de ese sensor
                 var res = await this.actualizarFechaUltimaMedicionSensor(req.macSensor, req.fecha);
 
                 if(res == 400){
@@ -279,7 +281,7 @@ module.exports = class LogicaNegocio {
      *  devuelve 400.
      * 
      * 
-     * mac: Texto -> buscarMedidasPorSensor() -->
+     *  mac: Texto -> buscarMedidasPorSensor() -->
      *  lista[{
         macSensor :Texto,
         tipoMedicion:Texto,
@@ -347,9 +349,9 @@ module.exports = class LogicaNegocio {
     async guardarSensor(sensor){
         try {
                   
-            if( sensor.macSensor && sensor.nombreSensor && sensor.uuid && sensor.tipoMedicion && sensor.fecha){
+            if( sensor.macSensor && sensor.nombreSensor && sensor.uuid && sensor.tipoMedicion && sensor.fecha && sensor.fechaUltimaMedicion){
                 const nuevoSensor = new Sensor( {macSensor : sensor.macSensor, nombreSensor: String(sensor.nombreSensor), uuid : String(sensor.uuid),
-                    tipoMedicion: String(sensor.tipoMedicion), fechaRegistro: sensor.fecha, fechaUltimaMedicion: sensor.fecha} );
+                    tipoMedicion: String(sensor.tipoMedicion), fechaRegistro: sensor.fecha, fechaUltimaMedicion: sensor.fechaUltimaMedicion} );
 
                 console.log(nuevoSensor)
 
