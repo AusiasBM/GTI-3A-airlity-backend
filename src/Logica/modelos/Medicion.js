@@ -40,16 +40,15 @@ const MedicionSchema = new mongoose.Schema ({
     }, 
 
     fecha: {
-        type: Date,
-        default: Date.now() + 2*3600*1000, // al sumar 2, estamos ajustando la hora de españa
-        required: false
+        type: Number,
+        required: true
     },
-    lat : {
+    latitud : {
         type: mongoose.Schema.Types.Decimal128,
         required: true,
         get: med,
     },
-    lng: {
+    longitud: {
         type: mongoose.Schema.Types.Decimal128,
         required: true,
         get: med,

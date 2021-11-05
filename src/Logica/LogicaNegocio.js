@@ -130,14 +130,11 @@ module.exports = class LogicaNegocio {
             if( req.macSensor && req.tipoMedicion && req.medida && req.temperatura && req.humedad && req.fecha && req.latitud && req.longitud ){
 
                 const nuevaMedicion = new Medicion( {macSensor : String(req.macSensor), tipoMedicion: String(req.tipoMedicion), medida : req.medida, temperatura:req.temperatura,
-                     humedad:req.humedad, fecha:req.fecha, lat:req.latitud, lng: req.longitud } );
+                     humedad:req.humedad, fecha:req.fecha, latitud:req.latitud, longitud: req.longitud } );
                 console.log(nuevaMedicion)
                 
                 //Guardamos la nueva medición
                 await nuevaMedicion.save();
-
-                //Ahora aprovechamos para actualizar la fecha de la última medición de ese sensor
-                var res = await this.actualizarFechaUltimaMedicionSensor(req.macSensor, req.fecha);
 
                 if(res == 400){
                     console.log("Error actualizando la ultima fecha del sensor");
@@ -179,7 +176,7 @@ module.exports = class LogicaNegocio {
     async obtenerTodasLasMediciones( ) {
         try {
             //invocamos el metodo find() excluiendo los campos que pone mongodb por defecto _id y __v: .select(['-_id', '-__v')
-            const mediciones = await Medicion.find().select(['-_id', '-__v']);
+            const mediciones = await Medicion.find().sort({'fecha': -1}).select(['-_id', '-__v']);
             console.log("hecho");
             return mediciones
           } catch (error) {
