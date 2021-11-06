@@ -1,3 +1,21 @@
+/**
+ * Sensor.js
+ * @author Aitor Benítez Estruch
+ * @date: 2021/11/02
+ * 
+ * @description:
+ * Modelo ORM de Mongoose donde se impementa la estructura de los documentos de la colección Sensors
+ * Estructura: 
+ * Sensor
+ * {
+ * macSensor: Texto
+ * nombreSensor: Texto
+ * tipoMedicion: Texto
+ * fechaRegistro: N
+}
+ * 
+ */
+
 const { Schema, model, Mongoose } = require("mongoose");
 
 // Get del atributo medición, gracias a este get en el json muestra la medición como string,
@@ -19,25 +37,14 @@ const SensorSchema = new Schema ({
         required: true,
     },
 
-    uuid : {
-        type: String,
-        required: true,
-    },
-
     tipoMedicion : {
         type: String,
         required: true,
     },
     
     fechaRegistro:{
-        type: Date,
+        type: Number,
         required: true
-    },
-
-    fechaUltimaMedicion: {
-        type: Date,
-        default: Date.now() + 2*3600*1000, // al sumar 2, estamos ajustando la hora de españa
-        required: false
     }
 
 });

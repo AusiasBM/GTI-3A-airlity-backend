@@ -1,3 +1,26 @@
+/**
+ * Medicion.js
+ * @author Aitor Benítez Estruch
+ * @date: 2021/11/02
+ * 
+ * @description:
+ * Modelo ORM de Mongoose donde se impementa la estructura de los documentos de la colección Medicions
+ * Estructura: 
+ * Medicion
+ * {
+ * macSensor: Texto 
+ * tipoMedicion: Texto
+ * medida: R
+ * temperatura: Z
+ * humedad: N
+ * fecha: N
+ * latitud: R
+ * longitud: R
+ * }
+ * 
+ */
+
+
 const mongoose =  require('mongoose');
 
 // Get del atributo medición, gracias a este get en el json muestra la medición como string,

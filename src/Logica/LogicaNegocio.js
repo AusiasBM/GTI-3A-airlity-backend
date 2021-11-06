@@ -136,10 +136,6 @@ module.exports = class LogicaNegocio {
                 //Guardamos la nueva medición
                 await nuevaMedicion.save();
 
-                if(res == 400){
-                    console.log("Error actualizando la ultima fecha del sensor");
-                }
-
                 return 200
 
             }else{
@@ -346,9 +342,9 @@ module.exports = class LogicaNegocio {
     async guardarSensor(sensor){
         try {
                   
-            if( sensor.macSensor && sensor.nombreSensor && sensor.uuid && sensor.tipoMedicion && sensor.fecha && sensor.fechaUltimaMedicion){
-                const nuevoSensor = new Sensor( {macSensor : sensor.macSensor, nombreSensor: String(sensor.nombreSensor), uuid : String(sensor.uuid),
-                    tipoMedicion: String(sensor.tipoMedicion), fechaRegistro: sensor.fecha, fechaUltimaMedicion: sensor.fechaUltimaMedicion} );
+            if( sensor.macSensor && sensor.nombreSensor && sensor.tipoMedicion && sensor.fecha){
+                const nuevoSensor = new Sensor( {macSensor : sensor.macSensor, nombreSensor: String(sensor.nombreSensor),
+                     tipoMedicion: String(sensor.tipoMedicion), fechaRegistro: sensor.fecha} );
 
                 console.log(nuevoSensor)
 
@@ -451,8 +447,8 @@ module.exports = class LogicaNegocio {
     } // ()
 
 
-
-    /**
+    /* Este método repensarlo!!!!
+    ///**
      * obtenerTodosLosSensores()
      * Descripción:
      * realiza una actualización de la fecha de registro de la última medida hecha por el sensor, filtrando por su MAC.
@@ -467,7 +463,7 @@ module.exports = class LogicaNegocio {
      * mac:Texto,
        fechaMedicion:N -> actualizarFechaUltimaMedicionSensor() ->
        respuesta: 200 || 400
-     */
+     //
     async actualizarFechaUltimaMedicionSensor(mac, fecha){
         try {
 
@@ -483,7 +479,7 @@ module.exports = class LogicaNegocio {
             console.log("Error: " + error);
             return 400
           }
-    }
+    }*/
 
 
 }// class()
