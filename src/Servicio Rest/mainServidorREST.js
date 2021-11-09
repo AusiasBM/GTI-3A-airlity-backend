@@ -16,14 +16,6 @@ const mongoose = require('mongoose');
 const port = 3500
 
 
-
-// .....................................................................
-//
-// .....................................................................
-
-
-
-
 // .....................................................................
 // main()
 // .....................................................................
@@ -34,9 +26,9 @@ async function main() {
 
 
     // Creo el servidor
-    var servidorExpress = express()
+    var app = express()
 
-    servidorExpress.use(function (req, res, next) {
+    app.use(function (req, res, next) {
 
         // Website you wish to allow to connect
         res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8080');
@@ -55,18 +47,18 @@ async function main() {
         next();
       });
       
-    servidorExpress.use ( express.json() )
-    servidorExpress.use (bodyParser.text({type : 'application/json'}) )
-    servidorExpress.use(express.static("public"));
-    servidorExpress.set("port", process.env.port || port );
+    app.use ( express.json() )
+    app.use (bodyParser.text({type : 'application/json'}) )
+    app.use(express.static("public"));
+    app.set("port", process.env.port || port );
 
 
     // Cargo las reglas REST
     var reglas = require( "./reglasREST.js")
-    reglas.cargar( servidorExpress, laLogica )
+    reglas.cargar( app, laLogica )
 
     // Arranco el servidor
-    var servicio = servidorExpress.listen( servidorExpress.get("port"), function() {
+    var servicio = app.listen( app.get("port"), function() {
         console.log( "servidor REST escuchando en el puerto 3500")
     })
 
