@@ -12,6 +12,7 @@
  const mongoose = require('mongoose');
  const Medicion = require("./modelos/Medicion");
  const Sensor = require("./modelos/Sensor");
+ const Usuario = require("./modelos/Usuario");
 
 
  /**
@@ -435,9 +436,9 @@ module.exports = class LogicaNegocio {
     async guardarSensor(sensor){
         try {
                   
-            if( sensor.macSensor && sensor.nombreSensor && sensor.tipoMedicion && sensor.fecha){
-                const nuevoSensor = new Sensor( {macSensor : sensor.macSensor, nombreSensor: String(sensor.nombreSensor),
-                     tipoMedicion: String(sensor.tipoMedicion), fechaRegistro: sensor.fecha} );
+            if( sensor.macSensor && sensor.nombreSensor && sensor.tipoMedicion && sensor.fechaRegistro){
+                const nuevoSensor = new Sensor( {macSensor : String(sensor.macSensor), nombreSensor: String(sensor.nombreSensor),
+                     tipoMedicion: String(sensor.tipoMedicion), fechaRegistro: sensor.fechaRegistro} );
 
                 console.log(nuevoSensor)
 
@@ -453,7 +454,7 @@ module.exports = class LogicaNegocio {
     
         } catch (error) {
             console.log("Error: " + error);
-            return 400
+            return 500
         }
     }
 
@@ -482,7 +483,6 @@ module.exports = class LogicaNegocio {
      * 
      */
     async buscarSensor(mac){
-        console.log(mac);
 
         try {
             // Invocamos el metodo findOne() porque sólo deberia haber un registro si lo hay,
@@ -540,39 +540,262 @@ module.exports = class LogicaNegocio {
     } // ()
 
 
-    /* Este método repensarlo!!!!
-    ///**
-     * obtenerTodosLosSensores()
+    
+    /**
+     * eliminarSensorPorMac()
      * Descripción:
-     * realiza una actualización de la fecha de registro de la última medida hecha por el sensor, filtrando por su MAC.
+     * realiza una operación borrado de un sensor por su mac 
+     * 
+     * @param mac Texto con la MAC del sensor
      * 
      * 
-     * @param mac Texto con la MAC del sensor a buscar
-     * @param fecha N de la fecha en milisegundos en la que registró la medición
-     * 
-     * @return Devuelve un JSON. En caso de producirse un error durante la consulta,
-     *  devuelve 400.
-     * 
-     * mac:Texto,
-       fechaMedicion:N -> actualizarFechaUltimaMedicionSensor() ->
-       respuesta: 200 || 400
-     //
-    async actualizarFechaUltimaMedicionSensor(mac, fecha){
+     *  mac: Texto -> eliminarSensorPorMac() -->
+     */
+     async eliminarSensorPorMac(mac){
         try {
-
-            console.log("Entra en actualizarFechaUltimaMedicionSensor");
-            //invocamos el metodo find() excluiendo los campos que pone mongodb por defecto _id y __v: .select(['-_id', '-__v')
-            const sensor = await Sensor.findOneAndUpdate({macSensor: String(mac)}, {fechaUltimaMedicion: fecha}, {
-                new: false, //no quiero que devuelva el valor actualizado
-                upsert: false //no quiero insertar solo la mac y la fecha si no lo encuentra
-              });
+            
+            await Sensor.deleteMany({macSensor : String(mac)});
             console.log("hecho");
             return 200
-          } catch (error) {
+        } catch (error) {
             console.log("Error: " + error);
             return 400
+        }
+    }
+
+
+
+
+
+
+
+
+
+    //==================================================================================================
+    //==================================================================================================
+    // Metodos de la logica de Usuarios
+    //==================================================================================================
+    //==================================================================================================
+
+    /**
+     * registrarUsuario()
+     * Descripción:
+     * realiza una operación de inserción en la colección Usuarios
+     * 
+     * @param nombreUsuario Texto con el nombre del usuario
+     * @param correo Texto con el email del usuario
+     * @param contrasenya Texto 
+     * @param telefono Número de contacto con el usuario
+     * 
+     * @return En caso de guardarse correctamente en la bd devuelve 200. En caso de producirse un error,
+     *  devuelve 400.
+     * 
+     *  nombreUsuario: Texto,
+     *  correo: Texto,
+     *  contrasenya: Texto,
+     *  telefono: N --> registrarUsuario() -->
+     *  respuesta: 200 || 400  <--
+     */
+    async registrarUsuario(usuario){
+        try {
+            
+            //Comprobamos si este correo ya está registrado
+            var usuarioYaRegistrado = await this.comprobarSiEsteUsuarioEstaRegistrado(usuario.correo);
+
+            //Si no lo está...
+            if(!usuarioYaRegistrado){
+                if( usuario.nombreUsuario && usuario.correo && usuario.contrasenya && usuario.telefono){
+                    const nuevoUsuario = new Usuario( {nombreUsuario : String(usuario.nombreUsuario), correo: String(usuario.correo),
+                         contrasenya: String(usuario.contrasenya), telefono: usuario.telefono} );
+    
+                    console.log(nuevoUsuario)
+    
+                    await nuevoUsuario.save();
+                    return 200
+    
+                }else{
+                    console.log("Error: faltan parametros");
+                    return 400   
+                }
+            }else{
+                console.log("Operación no autorizada: el usuario ya está registrado");
+                return 403
+            }
+    
+        } catch (error) {
+            console.log("Error: " + error);
+            return 500
+        }
+    }
+
+
+    /**
+     * buscarUsuario()
+     * Descripción:
+     * realiza una operación de búsqueda de un usuario por su correo y contraseña en la colección Usuarios (solo
+     * deberia haber un usuario con ese correo)
+     * 
+     * @param correo Texto con el email del usuario
+     * @param contrasenya Texto
+     * 
+     * @return En caso de encontrar un usuario que coincide con el correo y la contraseña en la bd devuelve JSON con los datos del usuario.
+     *  En caso contrario, devuelve 404. En caso de producirse un error, devuelve 400.
+     * 
+     *  correo: Texto --> buscarUsuario() <--
+     *  JSON <--
+     *  {       
+     *  nombreUsuario: Texto,
+     *  correo: Texto,
+     *  contrasenya: Texto,
+     *  telefono: N,
+     *  macSensor: Texto 
+     *  }  || 404 (no encontrado) || 400   <--
+     **/
+    async buscarUsuario(correo, contrasenya){
+        try {
+            // Invocamos el metodo findOne() porque sólo deberia haber un registro si lo hay,
+            // excluiendo los campos que pone mongodb por defecto  __v: .select(['-__v']) 
+            // Devuelve un JSON:
+            const usuario = await Usuario.findOne({correo: String(correo), contrasenya: String(contrasenya)}).select(['-__v']);
+            console.log("hecho");
+
+            console.log(usuario);
+
+            if(usuario){
+                return usuario
+            }
+
+            //No se ha encontrado nada
+            return 404
+            
+          } catch (error) {
+            console.log("Error: " + error);
+            return 500
           }
+    }
+
+
+
+    /**
+     * comprobarSiEsteUsuarioEstaRegistrado()
+     * Descripción:
+     * realiza una operación de búsqueda de un usuario por su correo en la colección Usuarios (solo
+     * deberia haber un usuario con ese correo) y si lo encuentra devuelve Verdadero
+     * 
+     * @param correo Texto con el email del usuario
+     * 
+     * @return En caso de encontrar un usuario que coincide con el correo en la bd devuelve True.
+     *  En caso contrario, devuelve False. En caso de producirse un error, devuelve 400.
+     * 
+     *  correo: Texto --> comprobarSiEsteUsuarioEstaRegistrado() <--
+     *  V/F || 400  <--
+     **/
+    async comprobarSiEsteUsuarioEstaRegistrado(correo){
+        try {
+            // Invocamos el metodo findOne() porque sólo deberia haber un registro si lo hay,
+            // excluiendo los campos que pone mongodb por defecto  __v: .select(['-__v']) 
+            // Devuelve un JSON:
+            const usuario = await Usuario.findOne({correo: String(correo)}).select(['-__v']);
+            console.log("hecho");
+
+            console.log(usuario);
+
+            if(usuario){
+                return true
+            }
+
+            //No se ha encontrado nada
+            return false
+            
+          } catch (error) {
+            console.log("Error: " + error);
+            return 500
+          }
+    }
+
+
+
+
+
+    /**
+     * actualizarMacSensorUsuario()
+     * Descripción:
+     * actualiza el campo de macSensor de un usuario por si cambiase de sensor
+     * 
+     * @param correo Texto con el correo del usuario
+     * @param macSensor Texto con la mac del nuevo sensor
+     * 
+     *  correo: Texto,
+     *  macSensor: Texto -> eliminarUsuario() -->
+     */
+    async actualizarMacSensorUsuario(correo, macSensor){
+        
+        try { 
+            await Usuario.findOneAndUpdate({ correo: String(correo) }, { macSensor: String(macSensor) });
+            console.log("hecho");
+            return 200
+        } catch (error) {
+            console.log("Error: " + error);
+            return 500
+        }
+    }
+
+
+    /**
+     * actualizarMacSensorUsuario()
+     * Descripción:
+     * actualiza el campo de macSensor de un usuario por si cambiase de sensor
+     * 
+     * @param correo Texto con el correo del usuario
+     * @param macSensor Texto con la mac del nuevo sensor
+     * 
+     *  correo: Texto,
+     *  macSensor: Texto -> eliminarUsuario() -->
+     *
+     async actualizarDatosUsuario(usuario){
+        
+        try { 
+            await Usuario.findOneAndUpdate({ correo: String(usuario.correo) }, { nombreUsuario: String(usuario.nombreUsuario), telefono: String(usuario.telefono) });
+            console.log("hecho");
+            return 200
+        } catch (error) {
+            console.log("Error: " + error);
+            return 500
+        }
     }*/
+
+
+
+
+    /**
+     * eliminarUsuario()
+     * Descripción:
+     * realiza una operación borrado de un usuario 
+     * 
+     * @param correo Texto con el correo del usuario
+     * 
+     * 
+     *  correo: Texto -> eliminarUsuario() -->
+     */
+     async eliminarUsuario(correo){
+        try {
+
+            //Como solo 
+            await Usuario.deleteOne({correo : String(correo)});
+            console.log("hecho");
+            return 200
+        } catch (error) {
+            console.log("Error: " + error);
+            return 500
+        }
+    }
+
+    
+
+
+
+
+
 
 
 }// class()
