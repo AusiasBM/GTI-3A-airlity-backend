@@ -38,6 +38,13 @@ const MedicionSchema = new mongoose.Schema ({
         required: true,
     },
 
+    idUsuario : {
+        type: String,
+        default: "Undefined",
+        required: false,
+    },
+
+
     tipoMedicion : {
         type: String,
         default: "Calidad del aire",

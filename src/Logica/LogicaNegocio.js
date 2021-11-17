@@ -112,6 +112,7 @@ module.exports = class LogicaNegocio {
      * 
      * JSON{
         macSensor :Texto,
+        idUsuario: Texto,
         tipoMedicion:Texto,
         medida: R,
         temperatura: Z,
@@ -127,9 +128,9 @@ module.exports = class LogicaNegocio {
         
         try {
             // Si creamos una lista con el mismo nombre que las clables del json, se añaden los valores automáticamente a cada variable            
-            if( req.macSensor && req.tipoMedicion && req.medida && req.temperatura && req.humedad && req.fecha && req.latitud && req.longitud ){
+            if( req.idUsuario && req.macSensor && req.tipoMedicion && req.medida && req.temperatura && req.humedad && req.fecha && req.latitud && req.longitud ){
 
-                const nuevaMedicion = new Medicion( {macSensor : String(req.macSensor), tipoMedicion: String(req.tipoMedicion), medida : req.medida, temperatura:req.temperatura,
+                const nuevaMedicion = new Medicion( {macSensor : String(req.macSensor), idUsuario:  String(req.idUsuario), tipoMedicion: String(req.tipoMedicion), medida : req.medida, temperatura:req.temperatura,
                      humedad:req.humedad, fecha:req.fecha, latitud:req.latitud, longitud: req.longitud } );
                 console.log(nuevaMedicion)
                 
@@ -161,6 +162,7 @@ module.exports = class LogicaNegocio {
      * obtenerTodasLasMediciones() -->
      *  lista [{
         macSensor :Texto,
+        idUsuario: Texto,
         tipoMedicion:Texto,
         medida: R,
         temperatura: Z,
@@ -184,7 +186,7 @@ module.exports = class LogicaNegocio {
 
     
     /**
-     * obtenerTodasLasMediciones()
+     * obtenerUltimasMediciones()
      * Descripción:
      * realiza una operación de consulta a la tabla Medicion de la bd y recupera los últimos n valores guardados, siendo
      * n = cuantas
@@ -198,6 +200,7 @@ module.exports = class LogicaNegocio {
      * cuantas: N -> obtenerUltimasMediciones() -->
      *  lista[{
         macSensor :Texto,
+        idUsuario: Texto,
         tipoMedicion:Texto,
         medida: R,
         temperatura: Z,
@@ -222,20 +225,78 @@ module.exports = class LogicaNegocio {
     } // ()
 
 
+    /**
+     * getMedicionesDeUsuarioPorTiempo()
+     * Descripción:
+     * realiza una operación de consulta a la tabla Medicion de la bd y recupera las mediciones hechas por un 
+     * usuario en un periodo de tiempo determinado (POR ORDEN DE MAS ANTIGUO A MAS RECIENTE!!)
+     * 
+     * 
+     * @param idUsuario Texto con el id del usuario
+     * @param fechaIni N con la fecha en milisegundos desde cuando se quiere obtener los datos
+     * @param fechaFin  N con la fecha en milisegundos hasta cuando se quiere obtener los datos. 
+     * 
+     * @return Devuelve una lista de JSON. En caso de producirse un error durante la consulta,
+     *  devuelve el tipo de error producido.
+     * 
+     * 
+     *  idUsuario: Texto,
+     *  fechaIni: N,
+     *  fechaFin: N -> getMedicionesDeUsuarioPorTiempo() -->
+     *  lista[{
+        macSensor :Texto,
+        idUsuario: Texto,
+        tipoMedicion:Texto,
+        medida: R,
+        temperatura: Z,
+        humedad: N
+        fecha: N,
+        latitud: R,
+        longitud: R}] || 400
+     */
+        async getMedicionesDeUsuarioPorTiempo( idUsuario, fechaIni, fechaFin = 0) {
+
+            try {
+
+                //Por si la fecha de fin es menor que la inicial, o no ponemos el parámetro fechaFin...
+                if(fechaIni >= fechaFin){
+                    const d = new Date();
+                    fechaFin = d.getTime();
+                    console.log("Fecha final menor que inicial!!")
+                }
+
+                //Obtenemos las medidas en orden ascendente de fecha (sort -> 1): de más antiguas a mas recientes
+                const mediciones = await Medicion.find({idUsuario : String(idUsuario), fecha : { $gte: fechaIni, $lte: fechaFin}}).sort({'fecha': 1}).select(['-_id', '-__v']);
+                console.log("hecho");
+                
+                return mediciones
+            } catch (error) {
+            console.log("Error: " + error);
+            return 400
+            }
+    
+        } // ()
+    
+
+
 
     /**
-     * buscarMedidasPorTipo()
+     * getMedicionesPorTiempoZona()
      * Descripción:
-     * realiza una operación de consulta a la tabla Medicion de la bd y filtrar por el tipo de medida para obtener
-     * las mediciones de un tipo de gas
+     * realiza una operación de consulta a la tabla Medicion de la bd y filtra para buscar las mediciones
+     * en una cuadrícula geográfica determinada por las coordenadas SO y NE de esta, y por un periodo de tiempo
+     * determinado (POR ORDEN DE MAS ANTIGUO A MAS RECIENTE!!)
      * 
-     * @param tipo Texto con el tipo de gas que se quiere obtener 
+     * @param posicionSO Objeto con la latitud Sur (tipo R) y longitud Oeste (tipo R) de la cuadrícula
+     * @param posicionNE Objeto con la latitud Norte (tipo R) y longitud Este (tipo R) de la cuadrícula
+     * @param fechaIni Numero con la fecha de inicio de búsqueda 
+     * @param fechaFin Numero con la fecha fin de búsqueda 
      * 
      * @return Devuelve una lista de JSON. En caso de producirse un error durante la consulta,
      *  devuelve 400.
      * 
      * 
-     * tipo: Texto -> buscarMedidasPorTipo() -->
+     * tipo: Texto -> getMedicionesPorTiempoZona() -->
      *  lista[{
         macSensor :Texto,
         tipoMedicion:Texto,
@@ -246,34 +307,40 @@ module.exports = class LogicaNegocio {
         latitud: R,
         longitud: R}]  || 400
      */
-    async buscarMedidasPorTipo( tipo ) {
+    async getMedicionesPorTiempoZona( posicionSO, posicionNE, fechaIni, fechaFin = 0 ) {
 
         try {
-            //Obtenemos las medidas en orden descendente por fecha (sort -> -1) y con un límite:
-            console.log(tipo);
-            const mediciones = await Medicion.find({tipoMedicion : String(tipo)}).sort({'fecha': -1}).select(['-_id', '-__v']);
+            if(fechaIni >= fechaFin){
+                const d = new Date();
+                fechaFin = d.getTime();
+                console.log("Fecha final menor que inicial!!")
+            }
+            //Obtenemos las medidas en orden ascendente de fecha (sort -> 1): de más antiguas a mas recientes
+            const mediciones = await Medicion.find({latitud : { $gte: posicionSO.latitud, $lte: posicionNE.latitud}, longitud : { $gte: posicionSO.longitud, $lte: posicionNE.longitud},
+                 fecha: { $gte: fechaIni, $lte: fechaFin}}).sort({'fecha': 1}).select(['-_id', '-__v']);
             console.log("hecho");
             return mediciones
         } catch (error) {
-        console.log("Error: " + error);
-        return 400
+            console.log("Error: " + error);
+            return 400
         }
 
     } // ()
 
 
     /**
-     * buscarMedidasPorSensor()
+     * getUltimasMedicionesPorSensor()
      * Descripción:
      * realiza una operación de consulta a la tabla Medicion de la bd y filtrar por la MAC del sensor para obtener
-     * las mediciones de un sensor
+     * las N últimas mediciones de un sensor (POR ORDEN DE MAS RECIENTE A MAS ANTIGUO!!)
      * 
+     * @param cuantas Número para obtener las N últimas mediciones
      * @param mac Texto con la MAC del sensor
      * 
      * @return Devuelve una lista de JSON. En caso de producirse un error durante la consulta,
      *  devuelve 400.
      * 
-     * 
+     *  cuantas: N,
      *  mac: Texto -> buscarMedidasPorSensor() -->
      *  lista[{
         macSensor :Texto,
@@ -285,12 +352,12 @@ module.exports = class LogicaNegocio {
         latitud: R,
         longitud: R}]  || 400
      */
-        async buscarMedidasPorSensor( mac ) {
+        async getUltimasMedicionesPorSensor( mac, cuantas) {
 
             try {
-                //Obtenemos las medidas en orden descendente por fecha (sort -> -1) y con un límite:
+                //Obtenemos las medidas en orden descendente de fecha (sort -> -1) y con un límite:
                 console.log(mac);
-                const mediciones = await Medicion.find({macSensor : String(mac)}).sort({'fecha': -1}).select(['-_id', '-__v']);
+                const mediciones = await Medicion.find({macSensor : String(mac)}).sort({'fecha': -1}).limit(parseInt(cuantas)).select(['-_id', '-__v']);
                 console.log("hecho");
                 return mediciones
             } catch (error) {
@@ -299,6 +366,32 @@ module.exports = class LogicaNegocio {
             }
     
         } // ()
+
+
+
+
+    /**
+     * eliminarMedicionesPorMac()
+     * Descripción:
+     * realiza una operación borrado de medidas por la mac del sensor
+     * 
+     * @param mac Texto con la MAC del sensor
+     * 
+     * 
+     * 
+     *  mac: Texto -> eliminarMedicionesPorMac() -->
+     */
+    async eliminarMedicionesPorMac(mac){
+        try {
+            
+            await Medicion.deleteMany({macSensor : String(mac)});
+            console.log("hecho");
+            return 200
+        } catch (error) {
+        console.log("Error: " + error);
+            return 400
+        }
+    }
 
 
 
