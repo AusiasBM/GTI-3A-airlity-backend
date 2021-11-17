@@ -23,7 +23,6 @@ describe( "Test: insertar un sensor, recuperar todos los sensores, buscar un sen
             {
                 macSensor: "00:00:00:00:00:00",
                 nombreSensor : "SensorDeProva",
-                uuid: "UUID_PROVA",
                 tipoMedicion: "PROVA",
                 fecha: 123456789012
             }
@@ -44,7 +43,7 @@ describe( "Test: insertar un sensor, recuperar todos los sensores, buscar un sen
         var res = await laLogica.obtenerTodosLosSensores()
 
         assert.equal( res.length, res.length , "¿no hay un resulado?" )
-        assert.equal( res[res.length-1].uuid, "UUID_PROVA", "¿La UUID del último sensor no es UUID_PROVA?" )
+        assert.equal( res[res.length-1].nombreSensor, "SensorDeProva", "¿La UUID del último sensor no es SensorDeProva?" )
         
     })//it()
 
