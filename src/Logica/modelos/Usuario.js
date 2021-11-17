@@ -39,7 +39,7 @@ const UsuarioSchema = new Schema ({
         required: true,
     },
 
-    contraseña : {
+    contrasenya : {
         type: String,
         required: true,
     },
@@ -51,11 +51,12 @@ const UsuarioSchema = new Schema ({
 
     macSensor : {
         type: String,
+        default: null,
         required: false,
     }
 
 });
 
-SensorSchema.set('toJSON', { getters: true, virtuals: false });
+UsuarioSchema.set('toJSON', { getters: true, virtuals: false });
 
 module.exports = model ( "Usuario", UsuarioSchema );

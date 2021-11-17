@@ -240,13 +240,27 @@ describe( "Test: Probar los métodos de la lógica de negocio relacionados con l
 
 
 
+    // ....................................................
+    // ....................................................
+    it("Comprovar que puedo eliminar las mediciones creadas en el test por su MAC", async function(){
+
+        var mac = "00:00:00:00:00:00";
+        var mac2 = "11:11:11:11:11:11";
+
+         //Borramos las medidas de prueba para restaurar la bbdd
+        var res = await laLogica.eliminarMedicionesPorMac(mac)
+        var res2 = await laLogica.eliminarMedicionesPorMac(mac2)
+
+        console.log(res)
+        assert.equal( res, 200, "¿No se ha eliminado?" )
+        assert.equal( res2, 200, "¿No se ha eliminado?" )
+    })//it()
 
     
-    //Borramos las medidas de prueba para restaurar la bbdd
+   
 
 
-    laLogica.eliminarMedicionesPorMac(macPrueba1)
-    laLogica.eliminarMedicionesPorMac(macPrueba2)
+    
 
    
 
