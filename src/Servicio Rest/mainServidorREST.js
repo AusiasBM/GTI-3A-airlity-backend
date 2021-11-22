@@ -12,7 +12,7 @@ const express = require( 'express' )
 const bodyParser = require( 'body-parser' )
 const path = require('path')
 const LogicaNegocio = require('../logica/logicaNegocio.js')
-const mongoose = require('mongoose');
+const session = require('express-session')
 const port = 3500
 
 
@@ -50,6 +50,13 @@ async function main() {
     app.use ( express.json() )
     app.use (bodyParser.text({type : 'application/json'}) )
     app.use(express.static("public"));
+    app.use(session({
+        secret: 'gti3a_tricoenvironment',
+        resave: false,
+        saveUninitialized: true
+        
+    }))
+
     app.set("port", process.env.port || port );
 
 

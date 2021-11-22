@@ -87,8 +87,9 @@ module.exports = class LogicaNegocio {
 
                 var res = await this.guardarMedicion(medicion)
 
+                //Si da algún error enviar la respuesta inmediatamente
                 console.log(i)
-                if(res == 400){
+                if(res == 400 || res == 500){
                     return res;
                 }
                 
@@ -147,7 +148,7 @@ module.exports = class LogicaNegocio {
     
         } catch (error) {
             console.log("Error: " + error);
-            return 400
+            return 500
         }
     } // ()
 
@@ -177,10 +178,16 @@ module.exports = class LogicaNegocio {
             //invocamos el metodo find() excluiendo los campos que pone mongodb por defecto _id y __v: .select(['-_id', '-__v')
             const mediciones = await Medicion.find().sort({'fecha': -1}).select(['-_id', '-__v']);
             console.log("hecho");
-            return mediciones
+
+            if(mediciones){
+                return mediciones
+            }
+
+            return 404
+            
           } catch (error) {
             console.log("Error: " + error);
-            return 400
+            return 500
           }
        
     } // ()
@@ -273,7 +280,7 @@ module.exports = class LogicaNegocio {
                 return mediciones
             } catch (error) {
             console.log("Error: " + error);
-            return 400
+            return 500
             }
     
         } // ()
@@ -651,15 +658,18 @@ module.exports = class LogicaNegocio {
      *  macSensor: Texto 
      *  }  || 404 (no encontrado) || 400   <--
      **/
-    async buscarUsuario(correo, contrasenya){
+    async buscarUsuario(correo){
         try {
             // Invocamos el metodo findOne() porque sólo deberia haber un registro si lo hay,
             // excluiendo los campos que pone mongodb por defecto  __v: .select(['-__v']) 
             // Devuelve un JSON:
-            const usuario = await Usuario.findOne({correo: String(correo), contrasenya: String(contrasenya)}).select(['-__v']);
+            const usuario = await Usuario.findOne({correo: String(correo)}).select(['-__v']);
             console.log("hecho");
 
             console.log(usuario);
+
+            //Para recuperar el id que pone mongoose por defecto
+            console.log(usuario.id)
 
             if(usuario){
                 return usuario
