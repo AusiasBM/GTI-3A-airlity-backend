@@ -96,9 +96,8 @@ describe( "Test: comprobar los métodos relacionados con los usuarios", function
     it("Comprovar que puedo obtener los datos de un usuario registrado", async function(){
 
         var correo = "prova@prova.com";
-        var contrasenya = "1234";
         //Comprovar qué asignatura/s está matriculado
-        var res = await laLogica.buscarUsuario(correo, contrasenya)
+        var res = await laLogica.buscarUsuario(correo)
 
         assert.equal( res.correo, "prova@prova.com", "¿no es el usuario prova@prova.com?" )
         assert.equal( res.telefono, 987654321, "¿El telefono del usuario no es 987654321?" )
@@ -113,14 +112,13 @@ describe( "Test: comprobar los métodos relacionados con los usuarios", function
 
         var mac = "00:00:00:00:00:00";
         var correo = "prova@prova.com";
-        var contrasenya = "1234";
 
         var res = await laLogica.actualizarMacSensorUsuario(correo, mac);
 
         console.log(res)
         assert.equal( res, 200, "¿No se ha actualizado?" )
 
-        var res = await laLogica.buscarUsuario(correo, contrasenya)
+        var res = await laLogica.buscarUsuario(correo)
 
         assert.equal( res.macSensor, "00:00:00:00:00:00", "¿La mac del sensor del usuario no es 00:00:00:00:00:00?" )
     })//it()

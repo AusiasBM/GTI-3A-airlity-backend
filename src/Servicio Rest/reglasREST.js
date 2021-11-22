@@ -12,6 +12,14 @@
 
 module.exports.cargar = function( servidorExpress, laLogica ) {
 
+
+    // ------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------
+    // Reglas mediciones
+    // ------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------
+
+
     // .......................................................
     // POST /mediciones
     // .......................................................
@@ -21,12 +29,15 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             console.log( " * POST /mediciones" )
             console.log(peticion.body)
             var datos =  peticion.body
+
+            //A ver como estan organizados los datos...
             console.log( "datos" )
             console.log( datos[0] )
-            console.log( "datos22222222222222222222222" )
 
+            console.log( "datos2" )
             console.log( JSON.parse(datos[0]) )
-            console.log( "datos333333333333333333333333" )
+
+            console.log( "datos3" )
             console.log( JSON.parse(datos[0]).medida )
            
 
@@ -36,6 +47,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             if(res == 200){
                 respuesta.status(200).send("Se ha dado de alta una nueva medida\n")
             }else{
+                
                 respuesta.status(400).sendStatus(res)
             }
 
@@ -92,6 +104,259 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             return
             
     })//get ultimasMediciones
+
+
+
+    // .......................................................
+    // GET /medicionesUsuarioHoy
+    //
+    // Mètode de provaa!!!!!!!!!
+    //
+    // .......................................................
+    servidorExpress.get(
+        '/medicionesUsuarioHoy',
+        async function(peticion, respuesta){
+            console.log(' * GET/ medicionesUsuarioHoy')
+
+            var id = 1;
+
+            let d = new Date()
+            /*resultado.fecha = d.getMonth() +1 + "-" + d.getDate() + "-" + d.getFullYear()
+
+            //Obtenemos la fecha de hoy a medianoche en milisegundos (mm-dd-yyyy 00:00:0000 -> a milisegundos)
+            let fechaInicio = Date.parse(resultado.fecha)
+            var res = await laLogica.getMedicionesDeUsuarioPorTiempo(id, fechaInicio, Date.now() );
+
+            if(res != 500){
+                respuesta.status(200).sendStatus(res)
+            }*/
+
+            var res = [
+
+                {idUsuario:1,
+                    macSensor: "00:00:00:00:00:00",
+                    tipoMedicion: 'CO',
+                    medida: 15.0,
+                    temperatura: 20,
+                    humedad: 64,
+                    latitud: 123.3,
+                    longitud: 321.1,
+                    fecha: Date.now() - 40707000
+                },
+                {idUsuario:1,
+                    macSensor: "00:00:00:00:00:00",
+                    tipoMedicion: 'CO',
+                    medida: 12.0,
+                    temperatura: 20,
+                    humedad: 64,
+                    latitud: 123.3,
+                    longitud: 321.1,
+                    fecha: Date.now() - 40706000
+                },
+                {idUsuario:1,
+                    macSensor: "00:00:00:00:00:00",
+                    tipoMedicion: 'CO',
+                    medida: 10.0,
+                    temperatura: 20,
+                    humedad: 64,
+                    latitud: 123.3,
+                    longitud: 321.1,
+                    fecha: Date.now() - 20702000
+                },
+                {idUsuario:1,
+                    macSensor: "00:00:00:00:00:00",
+                    tipoMedicion: 'CO',
+                    medida: 5.0,
+                    temperatura: 20,
+                    humedad: 64,
+                    latitud: 123.3,
+                    longitud: 321.1,
+                    fecha: Date.now() - 15707000
+                },
+                {idUsuario:1,
+                    macSensor: "00:00:00:00:00:00",
+                    tipoMedicion: 'CO',
+                    medida: 6.0,
+                    temperatura: 20,
+                    humedad: 64,
+                    latitud: 123.3,
+                    longitud: 321.1,
+                    fecha: Date.now() - 15706000
+                },
+                {idUsuario:1,
+                    macSensor: "00:00:00:00:00:00",
+                    tipoMedicion: 'CO',
+                    medida: 4.0,
+                    temperatura: 20,
+                    humedad: 64,
+                    latitud: 123.3,
+                    longitud: 321.1,
+                    fecha: Date.now() - 15702000
+                },
+                {idUsuario:1,
+                    macSensor: "00:00:00:00:00:00",
+                    tipoMedicion: 'CO',
+                    medida: 28.0,
+                    temperatura: 20,
+                    humedad: 64,
+                    latitud: 123.3,
+                    longitud: 321.1,
+                    fecha: Date.now() - 10707000
+                },
+                {idUsuario:1,
+                    macSensor: "00:00:00:00:00:00",
+                    tipoMedicion: 'CO',
+                    medida: 30.0,
+                    temperatura: 20,
+                    humedad: 64,
+                    latitud: 123.3,
+                    longitud: 321.1,
+                    fecha: Date.now() - 10706000
+                },
+                {idUsuario:1,
+                    macSensor: "00:00:00:00:00:00",
+                    tipoMedicion: 'CO',
+                    medida: 27.0,
+                    temperatura: 20,
+                    humedad: 64,
+                    latitud: 123.3,
+                    longitud: 321.1,
+                    fecha: Date.now() - 10702000
+                },
+                {idUsuario:1,
+                    macSensor: "00:00:00:00:00:00",
+                    tipoMedicion: 'CO',
+                    medida: 29.0,
+                    temperatura: 20,
+                    humedad: 64,
+                    latitud: 123.3,
+                    longitud: 321.1,
+                    fecha: Date.now() - 10701000
+                },
+                {idUsuario:1,
+                macSensor: "00:00:00:00:00:00",
+                tipoMedicion: 'CO',
+                medida: 15.0,
+                temperatura: 20,
+                humedad: 64,
+                latitud: 123.3,
+                longitud: 321.1,
+                fecha: Date.now() - 505000
+                },
+                {idUsuario:1,
+                    macSensor: "00:00:00:00:00:00",
+                    tipoMedicion: 'CO',
+                    medida: 15.0,
+                    temperatura: 20,
+                    humedad: 64,
+                    latitud: 123.3,
+                    longitud: 321.1,
+                    fecha: Date.now() - 504000
+                },
+                {idUsuario:1,
+                    macSensor: "00:00:00:00:00:00",
+                    tipoMedicion: 'CO',
+                    medida: 15.0,
+                    temperatura: 20,
+                    humedad: 64,
+                    latitud: 123.3,
+                    longitud: 321.1,
+                    fecha: Date.now() - 503000
+                },
+                {idUsuario:1,
+                    macSensor: "00:00:00:00:00:00",
+                    tipoMedicion: 'CO',
+                    medida: 15.0,
+                    temperatura: 20,
+                    humedad: 64,
+                    latitud: 123.3,
+                    longitud: 321.1,
+                    fecha: Date.now() - 502000
+                },
+                {idUsuario:1,
+                    macSensor: "00:00:00:00:00:00",
+                    tipoMedicion: 'CO',
+                    medida: 15.0,
+                    temperatura: 20,
+                    humedad: 64,
+                    latitud: 123.3,
+                    longitud: 321.1,
+                    fecha: Date.now() - 501000
+                },
+                {idUsuario:1,
+                    macSensor: "00:00:00:00:00:00",
+                    tipoMedicion: 'CO',
+                    medida: 15.0,
+                    temperatura: 20,
+                    humedad: 64,
+                    latitud: 123.3,
+                    longitud: 321.1,
+                    fecha: Date.now() - 105000
+                },
+                {idUsuario:1,
+                    macSensor: "00:00:00:00:00:00",
+                    tipoMedicion: 'CO',
+                    medida: 15.0,
+                    temperatura: 20,
+                    humedad: 64,
+                    latitud: 123.3,
+                    longitud: 321.1,
+                    fecha: Date.now() - 104000
+                },
+                {idUsuario:1,
+                    macSensor: "00:00:00:00:00:00",
+                    tipoMedicion: 'CO',
+                    medida: 17.0,
+                    temperatura: 20,
+                    humedad: 64,
+                    latitud: 123.3,
+                    longitud: 321.1,
+                    fecha: Date.now() - 103000
+                },
+                {idUsuario:1,
+                    macSensor: "00:00:00:00:00:00",
+                    tipoMedicion: 'CO',
+                    medida: 22.0,
+                    temperatura: 20,
+                    humedad: 64,
+                    latitud: 123.3,
+                    longitud: 321.1,
+                    fecha: Date.now() - 102000
+                },
+                {idUsuario:1,
+                    macSensor: "00:00:00:00:00:00",
+                    tipoMedicion: 'CO',
+                    medida: 23.0,
+                    temperatura: 20,
+                    humedad: 64,
+                    latitud: 123.3,
+                    longitud: 321.1,
+                    fecha: Date.now() - 101000
+                },
+                {idUsuario:1,
+                    macSensor: "00:00:00:00:00:00",
+                    tipoMedicion: 'CO',
+                    medida: 21.0,
+                    temperatura: 20,
+                    humedad: 64,
+                    latitud: 123.3,
+                    longitud: 321.1,
+                    fecha: Date.now() - 100000
+                }     
+            ]
+
+            console.log(res);
+
+            respuesta.send(res)
+        }
+    )
+
+
+    // ------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------
+    // Reglas sensores
+    // ------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------
 
 
     // .......................................................
@@ -177,5 +442,46 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             
     })//get todosLosSensores
 
+
+
+
+
+    // ------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------
+    // Reglas usuarios
+    // ------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------
+
+    // .......................................................
+    // POST /registrarUsuario
+    // .......................................................
+    servidorExpress.post(
+        '/registrarUsuario',
+        async function(peticion, respuesta){
+            console.log(" * POST/registrarUsuario ")
+
+            var datos =  peticion.body;
+
+            console.log(datos)
+
+            //Comprobamos si el sensor ya está añadido en la tabla Sensors (sólo puede haber una MAC para cada sensor)
+            var res = await laLogica.registrarUsuario(datos);
+            console.log(res)
+
+            if(res == 200){
+                respuesta.status(200).send("Se ha dado de alta un nuevo usuario\n");
+            }else if(res == 400){
+                respuesta.status(400).send("Error: faltan parametros\n")
+            }if(res == 403){
+                respuesta.status(403).send("Operación no autorizada: el usuario ya está registrado\n")
+            }else if (res == 500){
+                respuesta.status(500).sendStatus(res);
+            }
+            
+        }
+    )//() post registrar usuario
+
+
+    
 
 }

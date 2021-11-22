@@ -7,16 +7,17 @@
     "repository": "no hay",
     "scripts": {
         "servidor": "node mainServidorREST.js",
-        "dev" : "nodemon mainServidorREST.js",
+        "dev": "nodemon mainServidorREST.js",
         "test": "node ./node_modules/mocha/bin/mocha"
     },
     "dependencies": {
         "express": "*",
         "express-handlebars": "^4.0.4",
+        "express-session": "^1.17.2",
+        "mongoose": "^6.0.8",
         "path": "^0.12.7",
         "request": "*",
-        "sqlite3": "*",
-        "mongoose": "^6.0.8"
+        "sqlite3": "*"
     },
     "devDependencies": {
         "mocha": "*",
