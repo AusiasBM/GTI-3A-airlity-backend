@@ -106,6 +106,13 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
     })//get ultimasMediciones
 
 
+
+    // .......................................................
+    // GET /medicionesUsuarioHoy
+    //
+    // Mètode de provaa!!!!!!!!!
+    //
+    // .......................................................
     servidorExpress.get(
         '/medicionesUsuarioHoy',
         async function(peticion, respuesta){
@@ -462,12 +469,12 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             console.log(res)
 
             if(res == 200){
-                respuesta.status(200).send("Se ha dado de alta un nuevo usuario\n")
-            }else if(400){
-                respuesta.status(400).sendStatus(res).send("Faltan parametros\n")
+                respuesta.status(200).send("Se ha dado de alta un nuevo usuario\n");
+            }else if(res == 400){
+                respuesta.status(400).send("Error: faltan parametros\n")
             }if(res == 403){
-                respuesta.status(403).send("Usuario ya registrado\n")
-            }else{
+                respuesta.status(403).send("Operación no autorizada: el usuario ya está registrado\n")
+            }else if (res == 500){
                 respuesta.status(500).sendStatus(res);
             }
             

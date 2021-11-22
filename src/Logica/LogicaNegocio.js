@@ -88,7 +88,6 @@ module.exports = class LogicaNegocio {
                 var res = await this.guardarMedicion(medicion)
 
                 //Si da algún error enviar la respuesta inmediatamente
-                console.log(i)
                 if(res == 400 || res == 500){
                     return res;
                 }
