@@ -9,6 +9,21 @@
  * 
  */
 
+ const jwt = require('jsonwebtoken')
+
+ // middleware to validate token (rutas protegidas)
+ const verifyToken = (req, res, next) => {
+     const token = req.header('auth-token')
+     if (!token) return res.status(401).json({ error: 'Acceso denegado' })
+     try {
+         const verified = jwt.verify(token, process.env.TOKEN_SECRET)
+         req.user = verified
+         next() // continuamos
+     } catch (error) {
+         res.status(400).json({error: 'token no es válido'})
+     }
+ }
+
 
 module.exports.cargar = function( servidorExpress, laLogica ) {
 
@@ -24,7 +39,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
     // POST /mediciones
     // .......................................................
     servidorExpress.post(
-        '/mediciones',
+        '/mediciones', 
         async function( peticion, respuesta ){
             console.log( " * POST /mediciones" )
             console.log(peticion.body)
@@ -59,7 +74,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
     // GET /todasLasMediciones
     // .......................................................
     servidorExpress.get(
-        '/todasLasMediciones', 
+        '/todasLasMediciones', verifyToken,
         async function( peticion, respuesta){
             console.log(" * GET/todasLasMediciones ")
 
@@ -371,7 +386,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
     //
     // .......................................................
     servidorExpress.get(
-        '/datosGraficaUsuario',
+        '/datosGraficaUsuario', 
         async function(peticion, respuesta){
             console.log(' * GET/ datosGraficaUsuario?fechaIni=FechaInicial&fechaFin=FechaFinal')
 
@@ -630,7 +645,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
     // POST /sensor
     // .......................................................
     servidorExpress.post(
-        '/sensor',
+        '/sensor', verifyToken,
         async function(peticion, respuesta){
             console.log(" * POST/sensor ")
 
@@ -663,7 +678,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
     // GET /todosLosSensores
     // .......................................................
     servidorExpress.get(
-        '/todosLosSensores', 
+        '/todosLosSensores', verifyToken,
         async function( peticion, respuesta){
             console.log(" * GET/todosLosSensores ")
 
@@ -687,7 +702,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
     // GET /sensor?mac= 
     // .......................................................
     servidorExpress.get(
-        '/sensor', 
+        '/sensor', verifyToken,
         async function( peticion, respuesta){
             console.log(" * GET/sensor ")
 
@@ -748,6 +763,40 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
         }
     )//() post registrar usuario
 
+
+    // .......................................................
+    // POST /registrarUsuario
+    // .......................................................
+    servidorExpress.post(
+        '/login',
+        async function(peticion, respuesta){
+            console.log(" * POST/login ")
+
+            var datos =  peticion.body;
+
+            console.log(datos)
+
+            //Comprobamos si el sensor ya está añadido en la tabla Sensors (sólo puede haber una MAC para cada sensor)
+            var res = await laLogica.buscarUsuario(datos.correo, datos.contrasenya);
+            console.log(res)
+
+            if(res == 404){
+                respuesta.status(400).send("Correo o contrasenya erroneos\n")
+            }else if (res == 500){
+                respuesta.status(500).sendStatus(res);
+            }else{
+                const token = jwt.sign({
+                    id: res._id
+                }, process.env.TOKEN_SECRET)
+                
+                respuesta.header('auth-token', token).json({
+                    error: null,
+                    data: {token}
+                })
+            }
+            
+        }
+    )//() post registrar usuario
 
     
 
