@@ -679,12 +679,12 @@ module.exports = class LogicaNegocio {
      *  macSensor: Texto 
      *  }  || 404 (no encontrado) || 500   <--
      **/
-    async buscarUsuario(correo /*, contrasenya*/){
+    async buscarUsuario(correo , contrasenya){
         try {
             // Invocamos el metodo findOne() porque sólo deberia haber un registro si lo hay,
             // excluiendo los campos que pone mongodb por defecto  __v: .select(['-__v']) 
             // Devuelve un JSON:
-            const usuario = await Usuario.findOne({correo: String(correo)/*, contrasennya: String(contrasenya)*/}).select(['-__v']);
+            const usuario = await Usuario.findOne({correo: String(correo), contrasennya: String(contrasenya)}).select(['-__v']);
             console.log("hecho");
 
             console.log(usuario);

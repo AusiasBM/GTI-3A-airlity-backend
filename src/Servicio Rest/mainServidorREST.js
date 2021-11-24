@@ -9,10 +9,13 @@
  */
 
 const express = require( 'express' )
+const dotenv = require('dotenv');
+const reglas = require( "./reglasREST.js")
 const bodyParser = require( 'body-parser' )
 const path = require('path')
 const LogicaNegocio = require('../logica/logicaNegocio.js')
 const session = require('express-session')
+const jwt = require('jsonwebtoken');
 const port = 3500
 
 
@@ -24,9 +27,11 @@ async function main() {
     var laLogica = new LogicaNegocio();
     
 
-
     // Creo el servidor
     var app = express()
+
+    //Para usar variables de entorno configuradas (recordar crear .gitignore del archivo .env)
+    dotenv.config();
 
     app.use(function (req, res, next) {
 
@@ -50,6 +55,8 @@ async function main() {
     app.use ( express.json() )
     app.use (bodyParser.text({type : 'application/json'}) )
     app.use(express.static("public"));
+    
+    
     app.use(session({
         secret: 'gti3a_tricoenvironment',
         resave: false,
@@ -59,10 +66,8 @@ async function main() {
 
     app.set("port", process.env.port || port );
 
-
     // Cargo las reglas REST
-    var reglas = require( "./reglasREST.js")
-    reglas.cargar( app, laLogica )
+    reglas.cargar( app, laLogica, process.env.TOKEN_SECRET )
 
     // Arranco el servidor
     var servicio = app.listen( app.get("port"), function() {
