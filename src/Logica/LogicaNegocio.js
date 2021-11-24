@@ -13,6 +13,7 @@
  const Medicion = require("./modelos/Medicion");
  const Sensor = require("./modelos/Sensor");
  const Usuario = require("./modelos/Usuario");
+ const EstadisticasMediciones = require("./modelos/EstadisticasMediciones")
 
 
  /**
@@ -53,6 +54,7 @@ module.exports = class LogicaNegocio {
      */
     constructor() {
         conexionDB();
+        this.estadisticas = new EstadisticasMediciones();
     } // ()
 
 
@@ -76,7 +78,7 @@ module.exports = class LogicaNegocio {
      *  * mediciones: lista<Texto>
      * -->
      * guardarMediciones() -->
-     * 0 || err
+     * 200 || 400 || 500
      */
     async guardarMediciones(mediciones){
         console.log(mediciones)
@@ -121,7 +123,7 @@ module.exports = class LogicaNegocio {
         fecha: N,
         latitud: R,
         longitud: R} -> guardarMedicion() ->
-        respuesta: 200 || 400 <-
+        respuesta: 200 || 400 || 500 <-
      * 
      */
     async guardarMedicion( req ) {
@@ -170,7 +172,7 @@ module.exports = class LogicaNegocio {
         humedad: N
         fecha: N,
         latitud: R,
-        longitud: R }] || respuesta: 400
+        longitud: R }] || respuesta: 500
      */
     async obtenerTodasLasMediciones( ) {
         try {
@@ -214,7 +216,7 @@ module.exports = class LogicaNegocio {
         humedad: N
         fecha: N,
         latitud: R,
-        longitud: R}] || 400
+        longitud: R}] || 500
      */
     async obtenerUltimasMediciones( cuantas ) {
 
@@ -226,7 +228,7 @@ module.exports = class LogicaNegocio {
             return mediciones
         } catch (error) {
         console.log("Error: " + error);
-        return 400
+        return 500
         }
 
     } // ()
@@ -259,7 +261,7 @@ module.exports = class LogicaNegocio {
         humedad: N
         fecha: N,
         latitud: R,
-        longitud: R}] || 400
+        longitud: R}] || 500
      */
         async getMedicionesDeUsuarioPorTiempo( idUsuario, fechaIni, fechaFin = 0) {
 
@@ -312,7 +314,7 @@ module.exports = class LogicaNegocio {
         humedad: N
         fecha: N,
         latitud: R,
-        longitud: R}]  || 400
+        longitud: R}]  || 500
      */
     async getMedicionesPorTiempoZona( posicionSO, posicionNE, fechaIni, fechaFin = 0 ) {
 
@@ -329,7 +331,7 @@ module.exports = class LogicaNegocio {
             return mediciones
         } catch (error) {
             console.log("Error: " + error);
-            return 400
+            return 500
         }
 
     } // ()
@@ -347,17 +349,18 @@ module.exports = class LogicaNegocio {
      * @return Devuelve una lista de JSON. En caso de producirse un error durante la consulta,
      *  devuelve 400.
      * 
-     *  cuantas: N,
-     *  mac: Texto -> buscarMedidasPorSensor() -->
-     *  lista[{
-        macSensor :Texto,
-        tipoMedicion:Texto,
-        medida: R,
-        temperatura: Z,
-        humedad: N
-        fecha: N,
-        latitud: R,
-        longitud: R}]  || 400
+    *  cuantas: N,
+    mac: Texto -> getUltimasMedicionesPorSensor() -->
+    lista[{
+    idUsuario: Texto
+    macSensor :Texto,
+    tipoMedicion:Texto,
+    medida: R,
+    temperatura: Z,
+    humedad: N
+    fecha: N,
+    latitud: R,
+    longitud: R}]  || 500
      */
         async getUltimasMedicionesPorSensor( mac, cuantas) {
 
@@ -369,7 +372,7 @@ module.exports = class LogicaNegocio {
                 return mediciones
             } catch (error) {
             console.log("Error: " + error);
-            return 400
+            return 500
             }
     
         } // ()
@@ -396,10 +399,29 @@ module.exports = class LogicaNegocio {
             return 200
         } catch (error) {
         console.log("Error: " + error);
-            return 400
+            return 500
         }
     }
 
+
+    obtenerEstadisticas(mediciones, umbral){
+        
+        try{
+            return this.estadisticas.obtenerValoresEstadisticos(mediciones, umbral);
+        }catch(error){
+            return null;
+        }
+        
+    }
+
+    obtenerDatosParaGrafico(fechaIni, fechaFin, mediciones){
+        
+        try{
+            return this.estadisticas.sacarMediaMedicionesPorPeriodo(fechaIni, fechaFin, mediciones);
+        }catch(error){
+            return null;
+        }
+    }
 
 
 
@@ -485,7 +507,7 @@ module.exports = class LogicaNegocio {
         fechaRegistro: N,
         fechaUltimaMedicion: N
         } 
-        || respuesta: 404 || 400
+        || respuesta: 404 || 500
      * 
      */
     async buscarSensor(mac){
@@ -508,7 +530,7 @@ module.exports = class LogicaNegocio {
             
           } catch (error) {
             console.log("Error: " + error);
-            return 400
+            return 500
           }
     }
 
@@ -530,7 +552,7 @@ module.exports = class LogicaNegocio {
         tipoMedicion:Texto,
         fechaRegistro: N,
         fechaUltimaMedicion: N
-        } ] || respuesta: 400
+        } ] || respuesta: 500
      */
      async obtenerTodosLosSensores( ) {
         try {
@@ -540,7 +562,7 @@ module.exports = class LogicaNegocio {
             return sensores
           } catch (error) {
             console.log("Error: " + error);
-            return 400
+            return 500
           }
        
     } // ()
@@ -565,7 +587,7 @@ module.exports = class LogicaNegocio {
             return 200
         } catch (error) {
             console.log("Error: " + error);
-            return 400
+            return 500
         }
     }
 
@@ -600,7 +622,7 @@ module.exports = class LogicaNegocio {
      *  correo: Texto,
      *  contrasenya: Texto,
      *  telefono: N --> registrarUsuario() -->
-     *  respuesta: 200 || 400  <--
+     *  respuesta: 200 || 400 || 403 || 500  <--
      */
     async registrarUsuario(usuario){
         try {
@@ -655,14 +677,14 @@ module.exports = class LogicaNegocio {
      *  contrasenya: Texto,
      *  telefono: N,
      *  macSensor: Texto 
-     *  }  || 404 (no encontrado) || 400   <--
+     *  }  || 404 (no encontrado) || 500   <--
      **/
-    async buscarUsuario(correo){
+    async buscarUsuario(correo /*, contrasenya*/){
         try {
             // Invocamos el metodo findOne() porque sólo deberia haber un registro si lo hay,
             // excluiendo los campos que pone mongodb por defecto  __v: .select(['-__v']) 
             // Devuelve un JSON:
-            const usuario = await Usuario.findOne({correo: String(correo)}).select(['-__v']);
+            const usuario = await Usuario.findOne({correo: String(correo)/*, contrasennya: String(contrasenya)*/}).select(['-__v']);
             console.log("hecho");
 
             console.log(usuario);
@@ -697,7 +719,7 @@ module.exports = class LogicaNegocio {
      *  En caso contrario, devuelve False. En caso de producirse un error, devuelve 400.
      * 
      *  correo: Texto --> comprobarSiEsteUsuarioEstaRegistrado() <--
-     *  V/F || 400  <--
+     *  V/F || 500  <--
      **/
     async comprobarSiEsteUsuarioEstaRegistrado(correo){
         try {
@@ -751,7 +773,7 @@ module.exports = class LogicaNegocio {
 
 
     /**
-     * actualizarMacSensorUsuario()
+     * actualizarDatosUsuario()
      * Descripción:
      * actualiza el campo de macSensor de un usuario por si cambiase de sensor
      * 
@@ -798,13 +820,6 @@ module.exports = class LogicaNegocio {
             return 500
         }
     }
-
-    
-
-
-
-
-
 
 
 }// class()
