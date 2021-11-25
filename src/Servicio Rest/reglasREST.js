@@ -807,7 +807,23 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
         async function(peticion, respuesta){
             console.log(" * POST/registrarUsuario ")
 
-            var datos =  peticion.body;
+            var datos;
+
+            console.log("ENTRA EN registro usuario")
+
+            if(peticion.headers['correo']){
+                datos =  {
+                    nombreUsuario: peticion.headers['usuario'],
+                    correo: peticion.headers['correo'],
+                    contrasenya: peticion.headers['contrasenya'],
+                    telefono: peticion.headers['telefono'],
+                };
+                console.log("entra a headers")
+            }else{
+                
+                datos = peticion.body;
+                console.log("entra a body")
+            }
 
             console.log(datos)
 
@@ -843,7 +859,21 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
         async function(peticion, respuesta){
             console.log(" * POST/login ")
 
-            var datos =  peticion.body;
+            var datos;
+
+            console.log("ENTRA EN login usuario")
+
+            if(peticion.headers['correo']){
+                datos =  {
+                    correo: peticion.headers['correo'],
+                    contrasenya: peticion.headers['contrasenya']
+                };
+                console.log("entra a headers")
+            }else{
+                
+                datos = peticion.body;
+                console.log("entra a body")
+            }
 
             console.log(datos)
 
@@ -870,6 +900,5 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
         }
     )//() post registrar usuario
 
-    
 
 }
