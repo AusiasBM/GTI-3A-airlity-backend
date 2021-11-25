@@ -80,19 +80,17 @@ module.exports = class LogicaNegocio {
      * guardarMediciones() -->
      * 200 || 400 || 500
      */
-    async guardarMediciones(mediciones){
-        console.log(mediciones)
+    async guardarMediciones(idUsuario, mediciones){
+        var id = idUsuario;
         for(var i = 0; i < mediciones.length; i++){
             var medicion = JSON.parse(mediciones[i])
-            console.log(medicion)
-            console.log(medicion.medida)
 
-                var res = await this.guardarMedicion(medicion)
+            var res = await this.guardarMedicion(id, medicion)
 
-                //Si da algún error enviar la respuesta inmediatamente
-                if(res == 400 || res == 500){
-                    return res;
-                }
+            //Si da algún error enviar la respuesta inmediatamente
+            if(res == 400 || res == 500){
+                return res;
+            }
                 
                 
         }
@@ -126,14 +124,15 @@ module.exports = class LogicaNegocio {
         respuesta: 200 || 400 || 500 <-
      * 
      */
-    async guardarMedicion( req ) {
+    async guardarMedicion( id, req ) {
         console.log(req)
+        console.log(id)
         
         try {
             // Si creamos una lista con el mismo nombre que las clables del json, se añaden los valores automáticamente a cada variable            
-            if( req.idUsuario && req.macSensor && req.tipoMedicion && req.medida && req.temperatura && req.humedad && req.fecha && req.latitud && req.longitud ){
+            if(id && req.macSensor && req.tipoMedicion && req.medida && req.temperatura && req.humedad && req.fecha && req.latitud && req.longitud ){
 
-                const nuevaMedicion = new Medicion( {macSensor : String(req.macSensor), idUsuario:  String(req.idUsuario), tipoMedicion: String(req.tipoMedicion), medida : req.medida, temperatura:req.temperatura,
+                const nuevaMedicion = new Medicion( {idUsuario: id, macSensor : String(req.macSensor), tipoMedicion: String(req.tipoMedicion), medida : req.medida, temperatura:req.temperatura,
                      humedad:req.humedad, fecha:req.fecha, latitud:req.latitud, longitud: req.longitud } );
                 console.log(nuevaMedicion)
                 
@@ -759,10 +758,10 @@ module.exports = class LogicaNegocio {
      *  correo: Texto,
      *  macSensor: Texto -> eliminarUsuario() -->
      */
-    async actualizarMacSensorUsuario(correo, macSensor){
+    async actualizarMacSensorUsuario(idUsuario, macSensor){
         
         try { 
-            await Usuario.findOneAndUpdate({ correo: String(correo) }, { macSensor: String(macSensor) });
+            await Usuario.findOneAndUpdate({ _id: idUsuario }, { macSensor: String(macSensor) });
             console.log("hecho");
             return 200
         } catch (error) {
@@ -783,7 +782,7 @@ module.exports = class LogicaNegocio {
      *  correo: Texto,
      *  macSensor: Texto -> eliminarUsuario() -->
      *
-     async actualizarDatosUsuario(usuario){
+     async actualizarDatosPersonalesUsuario(usuario){
         
         try { 
             await Usuario.findOneAndUpdate({ correo: String(usuario.correo) }, { nombreUsuario: String(usuario.nombreUsuario), telefono: String(usuario.telefono) });
@@ -794,6 +793,31 @@ module.exports = class LogicaNegocio {
             return 500
         }
     }*/
+
+
+    /**
+     * cambiarContrasenyaUsuario()
+     * Descripción:
+     * actualiza el campo de macSensor de un usuario por si cambiase de sensor
+     * 
+     * @param correo Texto con el correo del usuario
+     * @param macSensor Texto con la mac del nuevo sensor
+     * 
+     *  correo: Texto,
+     *  macSensor: Texto -> eliminarUsuario() -->
+     *
+     async cambiarContrasenyaUsuario(usuario){
+        
+        try { 
+            await Usuario.findOneAndUpdate({ correo: String(usuario.correo) }, { contrasenya: String(usuario.contrasenya) });
+            console.log("hecho");
+            return 200
+        } catch (error) {
+            console.log("Error: " + error);
+            return 500
+        }
+    }*/
+
 
 
 

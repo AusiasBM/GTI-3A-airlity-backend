@@ -13,12 +13,22 @@
 
  // middleware to validate token (rutas protegidas)
  const verifyToken = (req, res, next) => {
-     const token = req.header('auth-token')
+    var token = req.headers['authorization']
      if (!token) return res.status(401).json({ error: 'Acceso denegado' })
      try {
-         const verified = jwt.verify(token, process.env.TOKEN_SECRET)
-         req.user = verified
-         next() // continuamos
+        
+        jwt.verify(token, process.env.TOKEN_SECRET, function(err, token) {
+            if (err) {
+              return res.status(401).send({
+                ok: false,
+                message: 'Toket inválido'
+              });
+            } else {
+              req.token = token
+              next() // continuamos
+            }
+          });
+        
      } catch (error) {
          res.status(400).json({error: 'token no es válido'})
      }
@@ -39,12 +49,16 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
     // POST /mediciones
     // .......................................................
     servidorExpress.post(
-        '/mediciones', 
+        '/mediciones', verifyToken,
         async function( peticion, respuesta ){
             console.log( " * POST /mediciones" )
             console.log(peticion.body)
-            var datos =  peticion.body
+            //var datos =  peticion.body
 
+            var datos = [
+                '{"macSensor":"00:00:00:00:00:00","tipoMedicion":"O3", "medida":123,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1234567890123}',
+                '{"macSensor":"00:00:00:00:00:00","tipoMedicion":"O3", "medida":456,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1234567890123}'
+            ]
             //A ver como estan organizados los datos...
             console.log( "datos" )
             console.log( datos[0] )
@@ -55,8 +69,10 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             console.log( "datos3" )
             console.log( JSON.parse(datos[0]).medida )
            
+            var id = peticion.token.id;
+            console.log(id)
 
-            var res = await laLogica.guardarMediciones(datos);
+            var res = await laLogica.guardarMediciones(id, datos);
             
             console.log(res)
             if(res == 200){
@@ -79,7 +95,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             console.log(" * GET/todasLasMediciones ")
 
             var res = await laLogica.obtenerTodasLasMediciones()
-            console.log(res)
+            //console.log(res)
             if(res.length == 0){
                 respuesta.status(404).send("No se ha encontrado ninguna medida")
                 return
@@ -129,7 +145,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
     //
     // .......................................................
     servidorExpress.get(
-        '/estadisticasMedicionesUsuario',
+        '/estadisticasMedicionesUsuario', /*verifyToken,*/
         async function(peticion, respuesta){
             console.log(' * GET/ estadisticasMedicionesUsuario?fechaIni=FechaInicial&fechaFin=FechaFinal')
 
@@ -138,15 +154,16 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             console.log(fechaIni)
             console.log(fechaFin)
 
-            /*resultado.fecha = d.getMonth() +1 + "-" + d.getDate() + "-" + d.getFullYear()
+            /*
+            var id = peticion.token.id;
 
             //Obtenemos la fecha de hoy a medianoche en milisegundos (mm-dd-yyyy 00:00:0000 -> a milisegundos)
-            let fechaInicio = Date.parse(resultado.fecha)
-            var res = await laLogica.getMedicionesDeUsuarioPorTiempo(id, fechaInicio, Date.now() );
+            //resultado.fecha = d.getMonth() +1 + "-" + d.getDate() + "-" + d.getFullYear()
+            //let fechaInicio = Date.parse(resultado.fecha)
 
-            if(res != 500){
-                respuesta.status(200).sendStatus(res)
-            }*/
+            var res = await laLogica.getMedicionesDeUsuarioPorTiempo(id, fechaIni, fechaFin );
+
+           */
 
             var res = [
 
@@ -386,7 +403,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
     //
     // .......................................................
     servidorExpress.get(
-        '/datosGraficaUsuario', 
+        '/datosGraficaUsuario', /*verifyToken,*/ 
         async function(peticion, respuesta){
             console.log(' * GET/ datosGraficaUsuario?fechaIni=FechaInicial&fechaFin=FechaFinal')
 
@@ -397,11 +414,12 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
 
             /*resultado.fecha = d.getMonth() +1 + "-" + d.getDate() + "-" + d.getFullYear()
 
+            var id = peticion.token.id;
             //Obtenemos la fecha de hoy a medianoche en milisegundos (mm-dd-yyyy 00:00:0000 -> a milisegundos)
             let fechaInicio = Date.parse(resultado.fecha)
             var res = await laLogica.getMedicionesDeUsuarioPorTiempo(id, fechaInicio, Date.now() );
 
-            if(res != 500){
+            if(res = 500){
                 respuesta.status(200).sendStatus(res)
             }*/
 
@@ -619,13 +637,12 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                 }     
             ]
 
+            var datosGrafica = laLogica.obtenerDatosParaGrafico(fechaIni, fechaFin, res)
 
-            var estadisticas = laLogica.obtenerDatosParaGrafico(fechaIni, fechaFin, res)
+            console.log(datosGrafica);
 
-            console.log(estadisticas);
-
-            if(estadisticas != null){
-                respuesta.send(estadisticas)
+            if(datosGrafica != null){
+                respuesta.send(datosGrafica)
             }else{
                 respuesta.status(500).send("Ha habido un problema");
             }
