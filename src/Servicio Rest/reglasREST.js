@@ -406,9 +406,11 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             //console.log(res);
 
 
-            var estadisticas = laLogica.obtenerEstadisticas(res, 20)
+            var tipoMedicion = res[0].tipoMedicion;
+            console.log(tipoMedicion)
+            var estadisticas = laLogica.obtenerEstadisticas(res, tipoMedicion)
 
-            console.log(estadisticas);
+            //console.log(estadisticas);
 
             if(estadisticas != null){
                 respuesta.send(estadisticas)
@@ -672,7 +674,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
 
             var datosGrafica = laLogica.obtenerDatosParaGrafico(fechaIni, fechaFin, res)
 
-            console.log(datosGrafica);
+            //console.log(datosGrafica);
 
             if(datosGrafica != null){
                 respuesta.send(datosGrafica)

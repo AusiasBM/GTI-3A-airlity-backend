@@ -1,11 +1,12 @@
 /**
- * LogicaNegocio.js
+ * EstadisticasMediciones.js
  * @author Aitor Benítez Estruch
  * @date: 2021/11/02
  * 
  * @description:
- * Clase LogicaNegocio contiene los métodos con las operaciones necesarias para insertar datos (mediciones del sensor)
- * y recuperarlas de la bd.
+ * Clase EstadisticasMediciones contiene los métodos para extraer una serie de estadísticas a partir de una lista de
+ * mediciones para estimar la calidad del aire respirado por un usuario. También contiene métodos para extraer
+ * datos para ser representados correctamente en un gráfico.
  * 
  */
 
@@ -15,8 +16,30 @@
     constructor(){} // ()
 
 
-    obtenerValoresEstadisticos( medicionesFiltradasPorPeriodo, umbralMaximo){
+    /**
+     * obtenerValoresEstadisticos
+     * Descripción:
+     * Método que recoge los datos generados en otros métodos para enviar los datos estadísticos generados en cada uno de los métodos
+     * que llama.
+     * 
+     * medicionesFiltradasPorPeriodo: lista[JSON],
+     * tipoMedicion: Texto -> obtenerValoresEstadisticos() <-
+     * JSON<-
+     * {media: R, 
+     * tiempo: N, 
+     * valorMaximo: R, 
+     * valoracionCalidadAire: Texto        
+     * advertencias: [JSON{fechaIni: N, fechaFin: N, periodoTiempoTranscurrido: N, mediaPeriodo: R, valorMaximoPeriodo: R}]
+     * }
+     * 
+     * @param medicionesFiltradasPorPeriodo Lista de mediciones de un periodo concreto
+     * 
+     * @returns objeto JSON {media: R, tiempo: N, valorMaximo: R, valoracionCalidadAire: Texto
+     *                      advertencias: [JSON{fechaIni: N, fechaFin: N, periodoTiempoTranscurrido: N, mediaPeriodo: R, valorMaximoPeriodo: R}]}
+     */
+    obtenerValoresEstadisticos( medicionesFiltradasPorPeriodo){
         
+        var umbralMaximo = this.establecerUmbralMaximo(medicionesFiltradasPorPeriodo[0].tipoMedicion)
         var mediaYTiempo = this.mediaPonderada( medicionesFiltradasPorPeriodo);
         var valorMax = this.valorMaximoPeriodo(medicionesFiltradasPorPeriodo);
         var adv = this.advertenciasUmbrales(medicionesFiltradasPorPeriodo, umbralMaximo);
@@ -25,6 +48,7 @@
         var valoracion = this.valoracionCalidadAireRespirado(mediaYTiempo.tiempoMedido, tiempoSobreexpuesto, mediaYTiempo.mediaPonderada, valorMax, umbralMaximo);
 
         var objeto = {
+            tipoGas: tipoMedicion,
             media: mediaYTiempo.mediaPonderada,
             tiempo: mediaYTiempo.tiempoMedido,
             valorMaximo: valorMax,
@@ -36,7 +60,45 @@
 
     }
 
+    /**
+     * establecerUmbralMaximo()
+     * Descripción:
+     * método para establecer el umbral máximo de ppm diario según el tipo de gas
+     * @param {*} tipoMedicion 
+     * @returns N valor del umbral máximo diario según el gas (en ppm)
+     */
+    establecerUmbralMaximo(tipoMedicion){
+        if(tipoMedicion == "IAQ"){
+            return 20;
+        }else if(tipoMedicion == "NO2"){
+            return 0.5
+        }else if(tipoMedicion == "SO2"){
+            return 0.5
+        }else if(tipoMedicion == "O3"){
+            return 0.2
+        }else if(tipoMedicion == "CO"){
+            return 20
+        }
+    }
 
+
+    /**
+     * mediaPonderada()
+     * Descripcion:
+     * método que a partir de una lista de mediciones, saca la media ponderada de los valores de las mediciones según el 
+     * intervalo de tiempo entre ellas, así como estima el tiempo que el usuario ha estado midiendo
+     * 
+     * medicionesFiltradasPorPeriodo: lista[JSON]
+     * -> mediaPonderada() 
+     * JSON
+     * {
+     * mediaPonderada: R,
+     * tiempoMedido: N
+     * }
+     * 
+     * @param {*} medicionesFiltradasPorPeriodo 
+     * @returns objeto JSON {mediaPonderada: R, tiempoMedido: N}
+     */
     mediaPonderada(medicionesFiltradasPorPeriodo){
         var n = 1;
         var sum = 0;
@@ -80,6 +142,17 @@
     }
 
 
+    /**
+     * valorMaximoPeriodo()
+     * Descripción:
+     * método para extraer el valor máximo que ha medido el usuario durante el periodo de tiempo
+     * 
+     * mediciones: lista[JSON] -> valorMaximoPeriodo()
+     * varlorMaximoMedido: R <-
+     * 
+     * @param {*} mediciones 
+     * @returns valorMaximoMedido Tipo R con el valor maximo de todas las mediciones
+     */
     valorMaximoPeriodo(mediciones){
 
         let varlorMaximoMedido = 0
@@ -94,6 +167,29 @@
     }
 
 
+    /**
+     * advertenciasUmbrales()
+     * Descripción:
+     * método para recopilar la información sobre los periodos donde el usuario ha registrado por encima del umbral
+     * máximo diario. Cada advertencia tiene la fecha inicial de cuando sobrepasa, la fecha final de cuando baja del umbral,
+     * el tiempo de exposición, la media ponderada de ese periodo, y el valor máximo registrado durante el periodo por encima
+     * del umbral.
+     * 
+     * mediciones: lista[JSON],
+     * umbralMaximoDiario: R ->advertenciasUmbrales
+     * JSON  <-
+     * {
+     * fechaIni: N,
+     * fechaFin: N,
+     * periodoTiempoTranscurrido:N,
+     * mediaPeriodo: R,
+     * valorMaximoPeriodo: R
+     * }
+     * 
+     * @param {*} mediciones lista[JSON]
+     * @param {*} umbralMaximoDiario Tipo R con el umbral máximo diario de ppm de un determinado gas
+     * @returns Lista [JSON{fechaIni: N, fechaFin: N, periodoTiempoTranscurrido: N, mediaPeriodo: R, valorMaximoPeriodo: R}]
+     */
     advertenciasUmbrales(mediciones, umbralMaximoDiario){
         var i = 0;
         var advertencias = [];
@@ -126,6 +222,18 @@
         return advertencias;
     }
 
+
+    /**
+     * calculoTiempoSobrexpuesto()
+     * Descripción:
+     * método para estimar el tiempo total que el usuario ha estado expuesto por encima del umbral máximo diario
+     * 
+     * advertencias [JSON] -> calculoTiempoSobrexpuesto()
+     * tiempoSobrexpuesto: N <-
+     * 
+     * @param {*} advertencias 
+     * @returns tiempoSobrexpuesto Tipo N con el tiempo que ha estado por encima del umbral
+     */
     calculoTiempoSobrexpuesto(advertencias){
 
         var tiempoSobrexpuesto = 0;
@@ -138,7 +246,26 @@
 
 
 
-
+    /**
+     * valoracionCalidadAireRespirado()
+     * Descripción:
+     * método para estimar la calidad del aire respirado a partir de la media ponderada, el valor máximo medido
+     * y el tiempo que el usuario ha estado sobreexpuesto a concentraciones por encima del umbral máximo diario.
+     * 
+     * tiempoTotalMedido: N
+     * tiempoSobreexpuesto: N
+     * media: R
+     * valorMaxMedido: R
+     * umbralMaximoDiario: R ->valoracionCalidadAireRespirado() <-
+     * Texto <-
+     * 
+     * @param {*} tiempoTotalMedido Tipo N con el tiempo que ha estado midiendo el usuario
+     * @param {*} tiempoSobreexpuesto Tipo N con el tiempo que el usuario ha estado por encima del umbral
+     * @param {*} media Tipo R con la media ponderada de las mediciones durante el periodo
+     * @param {*} valorMaxMedido Tipo R con el valor máximo medido
+     * @param {*} umbralMaximoDiario Tipo R con el umbral máximo diario de ppm de un determinado gas
+     * @returns Texto con la valoración de la calidad del aire
+     */
     valoracionCalidadAireRespirado(tiempoTotalMedido, tiempoSobreexpuesto, media, valorMaxMedido, umbralMaximoDiario){
         var proporcionSobreexposicion = tiempoSobreexpuesto/tiempoTotalMedido;
 
@@ -218,7 +345,20 @@
     //---------------------------------------------------------------------------------
 
 
-
+    /**
+     * escogerPeriodoEntreMuestras()
+     * Descripción:
+     * método para escoger la separacion temporal entre muestras para mostrar en el gráfico. Servirá para hacer la media de las mediciones
+     * durante x minutos, según la longitud temporal del periodo que se va a mostrar.
+     * 
+     * fechaIni: N,
+     * fechaFin: N -> escogerPeriodoEntreMuestras()
+     * N <-
+     * 
+     * @param {*} fechaIni Tipo N con la fecha inicial del periodo
+     * @param {*} fechaFin Tipo N con la fecha final del periodo
+     * @returns Tipo N con los minutos que habrá entre muestras en el gráfico
+     */
     escogerPeriodoEntreMuestras(fechaIni, fechaFin){
 
         var diferenciaTiempo = fechaFin - fechaIni;
@@ -245,6 +385,27 @@
 
     }
 
+    /**
+     * sacarMediaMedicionesPorPeriodo()
+     * Descripción:
+     * método que obtiene los valores de las mediciones que serán mostrados en el gráfico, así como las fechas
+     * asociadas a cada medición. Estas mediciones serán una media de las mediciones que se encuentren dentro de cada periodo
+     * de x minutos escogido en el método escogerPeriodoEntreMuestras()
+     * 
+     * fechaIni: N,
+     * fechaFin: N,
+     * mediciones: [lista JSON] -> sacarMediaMedicionesPorPeriodo() <-
+     * JSON  <-
+     * {
+     * fechas: [lista N],
+     *  medias: [lista R]
+     * }
+     * 
+     * @param {*} fechaIni Tipo N con la fecha inicial del periodo
+     * @param {*} fechaFin Tipo N con la fecha final del periodo
+     * @param {*} mediciones Lista de JSON con las mediciones
+     * @returns objeto JSON {fechas: [lista N], medias: [lista R]}
+     */
     sacarMediaMedicionesPorPeriodo(fechaIni, fechaFin, mediciones){
         var periodoInicio = fechaIni;
         var fechasPorPeriodo = [];
@@ -270,6 +431,21 @@
     }
     
 
+    /**
+     * mediaMedicionesPorPeriodo();
+     * Descripción:
+     * método que extrae la media a partir de una serie de mediciones.
+     * 
+     * fechaIni: N,
+     * fechaFin: N,
+     * mediciones: [lista JSON] -> mediaMedicionesPorPeriodo() <-
+     * R <-
+     * 
+     * @param {*} fechaIni 
+     * @param {*} fechaFin 
+     * @param {*} mediciones 
+     * @returns Tipo R con la media de cada periodo
+     */
     mediaMedicionesPorPeriodo(fechaIni, fechaFin, mediciones){
         var sum = 0;
         var cont = 0;

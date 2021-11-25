@@ -403,16 +403,38 @@ module.exports = class LogicaNegocio {
     }
 
 
-    obtenerEstadisticas(mediciones, umbral){
+    /**
+     * obtenerEstadisticas();
+     * Descripción:
+     * método que llama al método obtenerValoresEstadisticos de la clase EstadisticasMedicones
+     * y devuelve una serie de datos estadísticos de una lista de mediciones.
+     * 
+     * @param {*} mediciones Lista JSON de mediciones
+     * @returns Objeto {media: R, tiempo: N, valorMaximo: R, valoracionCalidadAire: Texto
+     *                      advertencias: [JSON{fechaIni: N, fechaFin: N, periodoTiempoTranscurrido: N, mediaPeriodo: R, valorMaximoPeriodo: R}]}
+     */
+    obtenerEstadisticas(mediciones){
         
         try{
-            return this.estadisticas.obtenerValoresEstadisticos(mediciones, umbral);
+            return this.estadisticas.obtenerValoresEstadisticos(mediciones, tipoMedicion);
         }catch(error){
             return null;
         }
         
     }
 
+    /**
+     * obtenerDatosParaGrafico()
+     * Descripción:
+     * método que llama al método sacarMediaMedicionesPorPeriodo de la clase EstadisticasMedicones
+     * y devuelve una lista de medias de mediciones por periodos de cada x minutos, así como la lista
+     * de fechas asociadas al periodo del que se ha extraído esas medias.
+     * 
+     * @param {*} fechaIni 
+     * @param {*} fechaFin 
+     * @param {*} mediciones 
+     * @returns Objeto {fechas: [lista N], medias: [lista R]}
+     */
     obtenerDatosParaGrafico(fechaIni, fechaFin, mediciones){
         
         try{
