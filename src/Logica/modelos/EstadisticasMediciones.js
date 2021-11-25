@@ -21,11 +21,15 @@
         var valorMax = this.valorMaximoPeriodo(medicionesFiltradasPorPeriodo);
         var adv = this.advertenciasUmbrales(medicionesFiltradasPorPeriodo, umbralMaximo);
 
+        var tiempoSobreexpuesto = this.calculoTiempoSobrexpuesto(adv);
+        var valoracion = this.valoracionCalidadAireRespirado(mediaYTiempo.tiempoMedido, tiempoSobreexpuesto, mediaYTiempo.mediaPonderada, valorMax, umbralMaximo);
+
         var objeto = {
             media: mediaYTiempo.mediaPonderada,
             tiempo: mediaYTiempo.tiempoMedido,
             valorMaximo: valorMax,
-            advertencias: adv
+            advertencias: adv,
+            valoracionCalidadAire: valoracion
         }
 
         return objeto;
@@ -113,18 +117,95 @@
                     valorMaximoPeriodo: max
                 }
 
-                
-
                 advertencias.push(objeto);
             }
-
-        
             
             i++;
         }
 
         return advertencias;
     }
+
+    calculoTiempoSobrexpuesto(advertencias){
+
+        var tiempoSobrexpuesto = 0;
+        for(var i = 0; i < advertencias.length; i ++){
+            tiempoSobrexpuesto += advertencias[i].periodoTiempoTranscurrido;
+        }
+
+        return tiempoSobrexpuesto;
+    }
+
+
+
+
+    valoracionCalidadAireRespirado(tiempoTotalMedido, tiempoSobreexpuesto, media, valorMaxMedido, umbralMaximoDiario){
+        var proporcionSobreexposicion = tiempoSobreexpuesto/tiempoTotalMedido;
+
+        var valoracionMediaMediciones = this.valoracionMediaMediciones(media, umbralMaximoDiario);
+        var valoracionProporcionTiempoSobrexpuesto = this.valoracionProporcionTiempoSobrexpuesto(proporcionSobreexposicion);
+        var valoracionValorMaximo =  this.valoracionValorMaximo(valorMaxMedido, umbralMaximoDiario);
+        var valoracionTotal = (valoracionMediaMediciones + valoracionValorMaximo + valoracionProporcionTiempoSobrexpuesto)/ 3;
+
+        if(valoracionTotal < 3 ){
+            return "Muy mala";
+        }else if(valoracionTotal >= 3 && valoracionTotal < 5){
+            return "Mala";
+        }else if(valoracionTotal >= 5 && valoracionTotal < 7){
+            return "Regular";
+        }else if(valoracionTotal >= 7 && valoracionTotal < 9){
+            return "Buena";
+        }else{
+            return "Excelente";
+        }
+
+
+
+
+    }
+
+    valoracionMediaMediciones(media, umbralMaximoDiario){
+        if(media < (0.5*umbralMaximoDiario)){
+            return 10;
+        }else if((media >= (0.5*umbralMaximoDiario) && media < (0.75*umbralMaximoDiario))){
+            return  7.5;
+        }else if((media >= (0.75*umbralMaximoDiario) && media < (umbralMaximoDiario))){
+            return 5;
+        }else if((media >= (umbralMaximoDiario) && media < (1.25 * umbralMaximoDiario))){
+            return 2.5;
+        }else{
+            return 0;
+        }
+    }
+
+    valoracionValorMaximo(valorMaxMedido, umbralMaximoDiario){
+        if(valorMaxMedido < (0.5*umbralMaximoDiario)){
+            return  10;
+        }else if(valorMaxMedido >= (0.5*umbralMaximoDiario) && valorMaxMedido < (0.75*umbralMaximoDiario)){
+            return  7.5;
+        }else if(valorMaxMedido >= (0.75*umbralMaximoDiario) && valorMaxMedido < (umbralMaximoDiario)){
+            return 5;
+        }else if(valorMaxMedido >= (umbralMaximoDiario) && valorMaxMedido < (1.25 * umbralMaximoDiario)){
+            return 2.5;
+        }else{
+            return 0;
+        }
+    }
+
+    valoracionProporcionTiempoSobrexpuesto(proporcionSobreexposicion){
+        if(proporcionSobreexposicion == 0){
+            return 10;
+        }else if(proporcionSobreexposicion > 0 && proporcionSobreexposicion <= 0.2){
+            return 7.5;
+        }else if(proporcionSobreexposicion > 0.2 && proporcionSobreexposicion <= 0.4){
+            return 5;
+        }else if(proporcionSobreexposicion > 0.4 && proporcionSobreexposicion <= 0.6){
+            return 2.5;
+        }else{
+            return 0;
+        }
+    }
+
 
     
 

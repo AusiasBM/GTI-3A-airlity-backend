@@ -683,7 +683,7 @@ module.exports = class LogicaNegocio {
             // Invocamos el metodo findOne() porque sólo deberia haber un registro si lo hay,
             // excluiendo los campos que pone mongodb por defecto  __v: .select(['-__v']) 
             // Devuelve un JSON:
-            const usuario = await Usuario.findOne({correo: String(correo), contrasennya: String(contrasenya)}).select(['-__v']);
+            const usuario = await Usuario.findOne({correo: String(correo), contrasenya: String(contrasenya)}).select(['-__v']);
             console.log("hecho");
 
             console.log(usuario);
@@ -795,6 +795,7 @@ module.exports = class LogicaNegocio {
     }*/
 
 
+    
     /**
      * cambiarContrasenyaUsuario()
      * Descripción:

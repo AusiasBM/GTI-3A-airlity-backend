@@ -45,20 +45,25 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
     // ------------------------------------------------------------------------------------------------
 
 
-    // .......................................................
-    // POST /mediciones
-    // .......................................................
+    /**
+     * POST /mediciones
+     * -> se envía a través del cuerpo de la petición un array JSON ([{macSensor: texto, tipoMedicion: texto, 
+     * medida: real, temperatura: entero, humedad: entero, fecha: entero, latitud: real, longitud: real } ]) 
+     * y se registra en la tabla Mediciones. 
+     * 
+     * 
+     */
     servidorExpress.post(
         '/mediciones', verifyToken,
         async function( peticion, respuesta ){
             console.log( " * POST /mediciones" )
             console.log(peticion.body)
-            //var datos =  peticion.body
+            var datos =  peticion.body
 
-            var datos = [
+           /* var datos = [
                 '{"macSensor":"00:00:00:00:00:00","tipoMedicion":"O3", "medida":123,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1234567890123}',
                 '{"macSensor":"00:00:00:00:00:00","tipoMedicion":"O3", "medida":456,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1234567890123}'
-            ]
+            ]*/
             //A ver como estan organizados los datos...
             console.log( "datos" )
             console.log( datos[0] )
@@ -86,9 +91,13 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
     ) // post mediciones
 
     
-    // .......................................................
-    // GET /todasLasMediciones
-    // .......................................................
+
+    /**
+     * GET /todasLasMediciones
+     * -> se envía a través de la URL y devuelve un array JSON [{macSensor: texto, tipoMedicion: texto, medida: real,
+     *  temperatura: entero, humedad: entero, fecha: entero, latitud: real, longitud: real } ]) desde la tabla
+     *  Mediciones con todas las mediciones registradas.
+     */
     servidorExpress.get(
         '/todasLasMediciones', verifyToken,
         async function( peticion, respuesta){
@@ -109,9 +118,14 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             
     })//get todasLasMediciones
 
-    // .......................................................
-    // GET /ultimasMediciones
-    // .......................................................
+
+
+    /**
+     * GET /ultimasMediciones
+     * -> se envía a través de la URL un texto con el número de mediciones que se quieren obtener y devuelve un array JSON 
+     *  [{macSensor: texto, tipoMedicion: texto, medida: real, temperatura: entero, humedad: entero, fecha: entero, latitud: real, longitud: real }])
+     *  desde la tabla Mediciones con las ‘n’ últimas mediciones registradas.
+     */
     servidorExpress.get(
         '/ultimasMediciones/:cuantas', 
         async function( peticion, respuesta){
@@ -144,6 +158,16 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
     // Mètode de provaa!!!!!!!!!
     //
     // .......................................................
+
+     /**
+     * GET /estadisticasMedicionesUsuario
+     * -> Se manda a través de la URL una query ?fechaIni=FechaInicial&fechaFin=FechaFinal de la fecha de inicio y de fin del periodo que se quiere obtener las mediciones
+     *  para llamar al método getMedicionesDeUsuarioPorTiempo de la lógica del negocio el cual obtiene una lista 
+     *  de mediciones de ese usuario en ese periodo, para posteriormente llamar al método obtenerEstadisticas
+     *  para devolver un JSON {valorMax: R, media: R, tiempo: N, advertencias: [ Lista de JSON {fechaIni: N, fechaFin: N, periodoTiempoTranscurrido: N,
+     *  mediaPeriodo: R, valorMaximoPeriodo: R} ] }
+     * 
+     */
     servidorExpress.get(
         '/estadisticasMedicionesUsuario', /*verifyToken,*/
         async function(peticion, respuesta){
@@ -167,7 +191,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
 
             var res = [
 
-                {idUsuario:1,
+               /* {idUsuario:1,
                     macSensor: "00:00:00:00:00:00",
                     tipoMedicion: 'CO',
                     medida: 15.0,
@@ -226,7 +250,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                     latitud: 123.3,
                     longitud: 321.1,
                     fecha: Date.now() - 15702000
-                },
+                },*/
                 {idUsuario:1,
                     macSensor: "00:00:00:00:00:00",
                     tipoMedicion: 'CO',
@@ -266,7 +290,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                     latitud: 123.3,
                     longitud: 321.1,
                     fecha: Date.now() - 10701000
-                },
+                }/*,
                 {idUsuario:1,
                 macSensor: "00:00:00:00:00:00",
                 tipoMedicion: 'CO',
@@ -376,7 +400,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                     latitud: 123.3,
                     longitud: 321.1,
                     fecha: Date.now() - 100000
-                }     
+                }*/     
             ]
 
             //console.log(res);
@@ -396,12 +420,21 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
     )
 
 
-        // .......................................................
+    // .......................................................
     // GET /estadisticasMedicionesUsuario
     //
     // Mètode de provaa!!!!!!!!!
     //
     // .......................................................
+
+    /**
+     * GET /datosGraficaUsuario
+     * -> Se manda a través de la URL una query ?fechaIni=FechaInicial&fechaFin=FechaFinal de la fecha de inicio y de fin del periodo que se quiere obtener las mediciones
+     *  para llamar al método getMedicionesDeUsuarioPorTiempo de la lógica del negocio el cual obtiene una lista 
+     *  de mediciones de ese usuario en ese periodo, para posteriormente llamar al método obtenerDatosParaGrafico
+     *  para devolver un JSON {medias:[Lista R], fechas: [Lista N]}
+     * 
+     */
     servidorExpress.get(
         '/datosGraficaUsuario', /*verifyToken,*/ 
         async function(peticion, respuesta){
@@ -658,9 +691,12 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
     // ------------------------------------------------------------------------------------------------
 
 
-    // .......................................................
-    // POST /sensor
-    // .......................................................
+    /**
+     * POST /sensor 
+     * -> se envía a través del cuerpo de la petición un JSON { macSensor: texto, nombreSensor: texto, uuid: texto, 
+     * tipoMedicion: texto, fechaRegistro: entero, fechaUltimaMedicion: entero} y primero se comprueba si ya existe un sensor 
+     * registrado con la misma MAC, y si no es así, se registra en la tabla Sensores.
+     */
     servidorExpress.post(
         '/sensor', verifyToken,
         async function(peticion, respuesta){
@@ -691,9 +727,12 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
     )//() post sensor
 
 
-    // .......................................................
-    // GET /todosLosSensores
-    // .......................................................
+
+    /**
+     * GET /todosLosSensores 
+     * -> devuelve un array JSON [{ macSensor: texto, nombreSensor: texto, uuid: texto, tipoMedicion: texto,
+     *  fechaRegistro: Date, fechaUltimaMedicion: Date}] con los datos de los sensores almacenados en la tabla Sensores.
+     */
     servidorExpress.get(
         '/todosLosSensores', verifyToken,
         async function( peticion, respuesta){
@@ -715,9 +754,13 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             
     })//get todosLosSensores
 
-     // .......................................................
-    // GET /sensor?mac= 
-    // .......................................................
+
+
+    /**
+     * GET /sensor?mac= -> se envía a través de la URL una query mac con la MAC del dispositivo requerido y devuelve un JSON 
+     * { macSensor: texto, nombreSensor: texto, uuid: texto, tipoMedicion: texto, fechaRegistro: Date, fechaUltimaMedicion: Date} 
+     * con los datos de ese sensor.
+     */
     servidorExpress.get(
         '/sensor', verifyToken,
         async function( peticion, respuesta){
@@ -751,9 +794,14 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
     // ------------------------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------------------------
 
-    // .......................................................
-    // POST /registrarUsuario
-    // .......................................................
+
+    /**
+     * POST /registrarUsuario
+     * -> Se le pasa en el cuerpo de la petición un JSON {nombreUsuario: Texto, correo: Texto, contrasenya:Texto, telefono: N}
+     * y llama al método registrarUsuario de la lógica de negocio para comprobar primero si el correo ya está registrado, y si 
+     * no lo está procede a guardar el usuario.
+     * 
+     */
     servidorExpress.post(
         '/registrarUsuario',
         async function(peticion, respuesta){
@@ -763,7 +811,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
 
             console.log(datos)
 
-            //Comprobamos si el sensor ya está añadido en la tabla Sensors (sólo puede haber una MAC para cada sensor)
+            //Llamamos a registrarUsuario en la lógica del negocio
             var res = await laLogica.registrarUsuario(datos);
             console.log(res)
 
@@ -781,9 +829,15 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
     )//() post registrar usuario
 
 
-    // .......................................................
-    // POST /registrarUsuario
-    // .......................................................
+
+    /**
+     * POST /login
+     * -> Se le pasa en el cuerpo de la petición un JSON {correo: Texto, contrasenya:Texto}
+     * y llama al método buscarUsuario de la lógica de negocio para comprobar si el correo y la contraseña 
+     * corresponden a un usuario, y si és correcto, devuelve los datos del usuario para posteriormente
+     * genera un token para iniciar una sesión de ese usuario.
+     * 
+     */
     servidorExpress.post(
         '/login',
         async function(peticion, respuesta){
@@ -808,7 +862,8 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                 
                 respuesta.header('auth-token', token).json({
                     error: null,
-                    data: {token}
+                    data: {token},
+                    usuario: res
                 })
             }
             
