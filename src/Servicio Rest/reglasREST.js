@@ -895,7 +895,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                 respuesta.header('auth-token', token).json({
                     error: null,
                     data: {token},
-                    usuario: res
+                    datosUsuario: res
                 })
             }
             
