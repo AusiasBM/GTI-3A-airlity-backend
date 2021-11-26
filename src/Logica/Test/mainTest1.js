@@ -33,7 +33,6 @@ describe( "Test: Probar los métodos de la lógica de negocio relacionados con l
             
             medida = {
                 macSensor:"00:00:00:00:00:00",
-                idUsuario: "00",
                 tipoMedicion: "CO2", 
                 medida: 1232,
                 temperatura: 20,
@@ -42,7 +41,10 @@ describe( "Test: Probar los métodos de la lógica de negocio relacionados con l
                 latitud: 123.5,
                 longitud: 321.5
             }
-            var res = await laLogica.guardarMedicion(medida)
+
+            //Me invento un id de un usuario
+            id = 1;
+            var res = await laLogica.guardarMedicion(id, medida)
             assert.equal( res, 200 , "¿No se ha insertado?" )
             } catch( err ) {
             // assert.equal( 0, 1, "cerrar conexión a BD fallada: " + err)
@@ -68,11 +70,14 @@ describe( "Test: Probar los métodos de la lógica de negocio relacionados con l
 
             //Asegurarse de que la fecha sea lo suficientemente grande ya que filtra por la fecha en orden descendiente (la primera medida de las 2 tiene una fecha mayor):
             var medidas = [
-                '{ "macSensor": "00:00:00:00:00:00", "idUsuario": "00", "tipoMedicion": "CO2", "medida": 1233,"temperatura": 20,"humedad": 50,"fecha": 166632515522844,"latitud": 123.5,"longitud": 121.5}',
-                '{ "macSensor": "00:00:00:00:00:00", "idUsuario": "00", "tipoMedicion": "CO2", "medida": 1234,"temperatura": 20,"humedad": 50,"fecha": 166632515522845,"latitud": 223.5,"longitud": 221.5}',
-                '{ "macSensor": "11:11:11:11:11:11", "idUsuario": "00", "tipoMedicion": "CO2", "medida": 1235,"temperatura": 20,"humedad": 50,"fecha": 166632515522846,"latitud": 323.5,"longitud": 321.5}'
+                '{ "macSensor": "00:00:00:00:00:00",  "tipoMedicion": "CO2", "medida": 1233,"temperatura": 20,"humedad": 50,"fecha": 166632515522844,"latitud": 123.5,"longitud": 121.5}',
+                '{ "macSensor": "00:00:00:00:00:00",  "tipoMedicion": "CO2", "medida": 1234,"temperatura": 20,"humedad": 50,"fecha": 166632515522845,"latitud": 223.5,"longitud": 221.5}',
+                '{ "macSensor": "11:11:11:11:11:11",  "tipoMedicion": "CO2", "medida": 1235,"temperatura": 20,"humedad": 50,"fecha": 166632515522846,"latitud": 323.5,"longitud": 321.5}'
             ]
-            var res = await laLogica.guardarMediciones(medidas)
+
+            //Me invento un id de un usuario
+            id = 1;
+            var res = await laLogica.guardarMediciones(id, medidas)
             assert.equal( res, 200 , "¿No se ha insertado?" )
             } catch( err ) {
             // assert.equal( 0, 1, "cerrar conexión a BD fallada: " + err)
@@ -170,7 +175,7 @@ describe( "Test: Probar los métodos de la lógica de negocio relacionados con l
 
     it("Comprovar que puedo filtrar las mediciones por usuario y periodo de tiempo. Primera prueba", async function(){
         
-        var idUsuario = "00"
+        var idUsuario = "1"
         var res = await laLogica.getMedicionesDeUsuarioPorTiempo(idUsuario, 0, 2 )
 
         console.log(res)
@@ -183,7 +188,7 @@ describe( "Test: Probar los métodos de la lógica de negocio relacionados con l
 
     it("Comprovar que puedo filtrar las mediciones por usuario y periodo de tiempo. Segunda prueba: fechaFin será la actual", async function(){
         
-        var idUsuario = "00"
+        var idUsuario = "1"
         var res = await laLogica.getMedicionesDeUsuarioPorTiempo(idUsuario, 0)
 
         console.log(res)
@@ -196,7 +201,7 @@ describe( "Test: Probar los métodos de la lógica de negocio relacionados con l
 
     it("Comprovar que puedo filtrar las mediciones por usuario y periodo de tiempo. Tercera prueba: recuperar varias medidas", async function(){
         
-        var idUsuario = "00"
+        var idUsuario = "1"
         var res = await laLogica.getMedicionesDeUsuarioPorTiempo(idUsuario, 166632515522840, 166632515522850)
 
         console.log(res)

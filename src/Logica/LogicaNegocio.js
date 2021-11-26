@@ -711,7 +711,7 @@ module.exports = class LogicaNegocio {
             console.log(usuario);
 
             //Para recuperar el id que pone mongoose por defecto
-            console.log(usuario.id)
+           // console.log(usuario.id)
 
             if(usuario){
                 return usuario
@@ -855,11 +855,11 @@ module.exports = class LogicaNegocio {
      * 
      *  correo: Texto -> eliminarUsuario() -->
      */
-     async eliminarUsuario(correo){
+     async eliminarUsuario(idUsuario){
         try {
 
             //Como solo 
-            await Usuario.deleteOne({correo : String(correo)});
+            await Usuario.deleteOne({_id : idUsuario});
             console.log("hecho");
             return 200
         } catch (error) {

@@ -191,7 +191,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
 
             var res = [
 
-               /* {idUsuario:1,
+               {idUsuario:1,
                     macSensor: "00:00:00:00:00:00",
                     tipoMedicion: 'CO',
                     medida: 15.0,
@@ -250,7 +250,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                     latitud: 123.3,
                     longitud: 321.1,
                     fecha: Date.now() - 15702000
-                },*/
+                },
                 {idUsuario:1,
                     macSensor: "00:00:00:00:00:00",
                     tipoMedicion: 'CO',
@@ -290,7 +290,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                     latitud: 123.3,
                     longitud: 321.1,
                     fecha: Date.now() - 10701000
-                }/*,
+                },
                 {idUsuario:1,
                 macSensor: "00:00:00:00:00:00",
                 tipoMedicion: 'CO',
@@ -400,7 +400,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                     latitud: 123.3,
                     longitud: 321.1,
                     fecha: Date.now() - 100000
-                }*/     
+                }    
             ]
 
             //console.log(res);
@@ -897,6 +897,35 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                     data: {token},
                     usuario: res
                 })
+            }
+            
+        }
+    )//() post registrar usuario
+
+
+    /**
+     * POST /registrarUsuario
+     * -> Se le pasa en el cuerpo de la petición un JSON {nombreUsuario: Texto, correo: Texto, contrasenya:Texto, telefono: N}
+     * y llama al método registrarUsuario de la lógica de negocio para comprobar primero si el correo ya está registrado, y si 
+     * no lo está procede a guardar el usuario.
+     * 
+     */
+     servidorExpress.post(
+        '/eliminarUsuario', verifyToken,
+        async function(peticion, respuesta){
+            console.log(" * POST/eliminarUsuario ")
+
+            var id = peticion.token.id;
+
+            console.log(id)
+            var res = await laLogica.eliminarUsuario(id);
+
+            console.log(res)
+            if(res == 200){
+                respuesta.status(200).sendStatus(res);
+                
+            }else{
+                respuesta.status(res);
             }
             
         }
