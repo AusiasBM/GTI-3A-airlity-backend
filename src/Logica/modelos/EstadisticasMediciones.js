@@ -37,9 +37,9 @@
      * @returns objeto JSON {media: R, tiempo: N, valorMaximo: R, valoracionCalidadAire: Texto
      *                      advertencias: [JSON{fechaIni: N, fechaFin: N, periodoTiempoTranscurrido: N, mediaPeriodo: R, valorMaximoPeriodo: R}]}
      */
-    obtenerValoresEstadisticos( medicionesFiltradasPorPeriodo){
+    obtenerValoresEstadisticos( medicionesFiltradasPorPeriodo, tipoMedicion){
         
-        var umbralMaximo = this.establecerUmbralMaximo(medicionesFiltradasPorPeriodo[0].tipoMedicion)
+        var umbralMaximo = this.establecerUmbralMaximo(tipoMedicion)
         var mediaYTiempo = this.mediaPonderada( medicionesFiltradasPorPeriodo);
         var valorMax = this.valorMaximoPeriodo(medicionesFiltradasPorPeriodo);
         var adv = this.advertenciasUmbrales(medicionesFiltradasPorPeriodo, umbralMaximo);

@@ -413,7 +413,7 @@ module.exports = class LogicaNegocio {
      * @returns Objeto {media: R, tiempo: N, valorMaximo: R, valoracionCalidadAire: Texto
      *                      advertencias: [JSON{fechaIni: N, fechaFin: N, periodoTiempoTranscurrido: N, mediaPeriodo: R, valorMaximoPeriodo: R}]}
      */
-    obtenerEstadisticas(mediciones){
+    obtenerEstadisticas(mediciones, tipoMedicion){
         
         try{
             return this.estadisticas.obtenerValoresEstadisticos(mediciones, tipoMedicion);

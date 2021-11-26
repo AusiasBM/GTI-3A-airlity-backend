@@ -54,13 +54,14 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
      * 
      */
     servidorExpress.post(
-        '/mediciones', verifyToken,
+        '/mediciones', /*verifyToken,*/
         async function( peticion, respuesta ){
             console.log( " * POST /mediciones" )
             console.log(peticion.body)
             var datos =  peticion.body
 
-           /* var datos = [
+           /* Datos de prueba
+           var datos = [
                 '{"macSensor":"00:00:00:00:00:00","tipoMedicion":"O3", "medida":123,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1234567890123}',
                 '{"macSensor":"00:00:00:00:00:00","tipoMedicion":"O3", "medida":456,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1234567890123}'
             ]*/
@@ -74,7 +75,8 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             console.log( "datos3" )
             console.log( JSON.parse(datos[0]).medida )
            
-            var id = peticion.token.id;
+            //var id = peticion.token.id;
+            var id = 00;
             console.log(id)
 
             var res = await laLogica.guardarMediciones(id, datos);
@@ -99,7 +101,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
      *  Mediciones con todas las mediciones registradas.
      */
     servidorExpress.get(
-        '/todasLasMediciones', verifyToken,
+        '/todasLasMediciones', /*verifyToken,*/
         async function( peticion, respuesta){
             console.log(" * GET/todasLasMediciones ")
 
@@ -189,6 +191,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
 
            */
 
+            //Simulación Datos de prueba (para no tener que estar midiendo datos del sensor)!!!!!!!!!!!!
             var res = [
 
                {idUsuario:1,
@@ -403,14 +406,14 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                 }    
             ]
 
-            //console.log(res);
+            console.log(res);
 
 
             var tipoMedicion = res[0].tipoMedicion;
             console.log(tipoMedicion)
             var estadisticas = laLogica.obtenerEstadisticas(res, tipoMedicion)
 
-            //console.log(estadisticas);
+            console.log(estadisticas);
 
             if(estadisticas != null){
                 respuesta.send(estadisticas)
@@ -458,6 +461,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                 respuesta.status(200).sendStatus(res)
             }*/
 
+             //Simulación Datos de prueba (para no tener que estar midiendo datos del sensor)!!!!!!!!!!!!
             var res = [
 
                 {idUsuario:1,
@@ -895,7 +899,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                 respuesta.header('auth-token', token).json({
                     error: null,
                     data: {token},
-                    datosUsuario: res
+                    usuario: res
                 })
             }
             
@@ -923,7 +927,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             console.log(res)
             if(res == 200){
                 respuesta.status(200).sendStatus(res);
-                
+                console.log(res)
             }else{
                 respuesta.status(res);
             }
