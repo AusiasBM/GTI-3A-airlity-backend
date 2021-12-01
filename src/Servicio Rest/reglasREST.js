@@ -403,7 +403,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                     latitud: 123.3,
                     longitud: 321.1,
                     fecha: Date.now() - 100000
-                }    
+                }   
             ]
 
             console.log(res);
@@ -899,7 +899,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                 respuesta.header('auth-token', token).json({
                     error: null,
                     data: {token},
-                    usuario: res
+                    datosUsuario: res
                 })
             }
             
