@@ -28,7 +28,7 @@
   */
  const conexionDB = async () => {
     try {
-       
+       // Cuando esté en producción hay que cambiar localhost por mongo
         const DB = await mongoose.connect('mongodb://localhost:27017/airlity', { useUnifiedTopology: true, 
         useNewUrlParser: true});
         console.log("Conectado con Mongo, ", DB.connection.name);

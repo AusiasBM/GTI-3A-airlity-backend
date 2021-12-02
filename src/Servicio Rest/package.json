@@ -6,7 +6,7 @@
     "version": "0.0.1",
     "repository": "no hay",
     "scripts": {
-        "servidor": "node mainServidorREST.js",
+        "start": "node mainServidorREST.js",
         "dev": "nodemon mainServidorREST.js",
         "test": "node ./node_modules/mocha/bin/mocha"
     },
