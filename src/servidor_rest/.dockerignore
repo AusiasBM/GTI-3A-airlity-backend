@@ -1,0 +1,4 @@
+# @Autor Ausias Bañuls
+# @Description Aquí ponemos los archivos y directorios que no queremos que docker copie dentro del contenedor
+node_modules
+.env

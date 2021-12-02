@@ -1,0 +1,23 @@
+# @Autor Ausias Bañuls
+# @Description docker-compose lo utilizamos cuando queremos que varios contenedores trabajen a la vez y no tengamos que estar iniciandolos uno por uno y configurandolos uno por uno
+version: "3"
+
+services: 
+  web:
+    container_name: backend
+    restart: always
+    build: .
+    ports:
+      - "3500:3500"
+    links:
+      - mongo
+    volumes:
+      - .:/usr/src/app
+  mongo:
+    container_name: backend-mongo
+    image: mongo
+    ports:
+      - "27080:27017"
+    logging:
+      driver: none
+  
