@@ -138,7 +138,7 @@ describe( "Test: Probar los métodos de la lógica de negocio relacionados con l
         } 
             
 
-        var res = await laLogica.getMedicionesPorTiempoZona(posicionSO, posicionNE, 166632515522840, 166632515522850);
+        var res = await laLogica.getMedicionesPorTiempoZona(posicionSO, posicionNE, 166632515522840, 166632515522850, , "CO2");
 
         console.log(res)
         assert.equal( res.length, 1 , "¿No hay solo 1 medida?" )
@@ -162,7 +162,7 @@ describe( "Test: Probar los métodos de la lógica de negocio relacionados con l
             longitud : 500
         }    
 
-        var res = await laLogica.getMedicionesPorTiempoZona(posicionSO, posicionNE, 0, 2);
+        var res = await laLogica.getMedicionesPorTiempoZona(posicionSO, posicionNE, 0, 2, "CO2");
 
         console.log(res)
         assert.equal( res.length, 1 , "¿No hay solo 1 medida?" )
@@ -262,11 +262,4 @@ describe( "Test: Probar los métodos de la lógica de negocio relacionados con l
     })//it()
 
     
-   
-
-
-    
-
-   
-
 }) // describe

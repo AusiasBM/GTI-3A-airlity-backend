@@ -51,8 +51,13 @@ const UsuarioSchema = new Schema ({
 
     macSensor : {
         type: String,
-        default: null,
-        required: false,
+        required: true,
+    },
+
+    rol:{
+        type: String,
+        default: "Usuario",
+        required: true
     }
 
 });
