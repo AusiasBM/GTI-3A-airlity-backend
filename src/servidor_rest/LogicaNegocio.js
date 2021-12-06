@@ -13,6 +13,7 @@
  const Medicion = require("./modelos/Medicion");
  const Sensor = require("./modelos/Sensor");
  const Usuario = require("./modelos/Usuario");
+ const Poblacion = require("./modelos/Poblacion");
  const EstadisticasMediciones = require("./modelos/EstadisticasMediciones")
 
 
@@ -299,6 +300,7 @@ module.exports = class LogicaNegocio {
      * @param posicionNE Objeto con la latitud Norte (tipo R) y longitud Este (tipo R) de la cuadrícula
      * @param fechaIni Numero con la fecha de inicio de búsqueda 
      * @param fechaFin Numero con la fecha fin de búsqueda 
+     * @param tipoMedicion Texto con el tipo de medicion 
      * 
      * @return Devuelve una lista de JSON. En caso de producirse un error durante la consulta,
      *  devuelve 400.
@@ -315,7 +317,7 @@ module.exports = class LogicaNegocio {
         latitud: R,
         longitud: R}]  || 500
      */
-    async getMedicionesPorTiempoZona( posicionSO, posicionNE, fechaIni, fechaFin = 0 ) {
+    async getMedicionesPorTiempoZona( posicionSO, posicionNE, fechaIni, fechaFin = 0, tipoMedicion ) {
 
         try {
             if(fechaIni >= fechaFin){
@@ -325,7 +327,7 @@ module.exports = class LogicaNegocio {
             }
             //Obtenemos las medidas en orden ascendente de fecha (sort -> 1): de más antiguas a mas recientes
             const mediciones = await Medicion.find({latitud : { $gte: posicionSO.latitud, $lte: posicionNE.latitud}, longitud : { $gte: posicionSO.longitud, $lte: posicionNE.longitud},
-                 fecha: { $gte: fechaIni, $lte: fechaFin}}).sort({'fecha': 1}).select(['-_id', '-__v']);
+                 fecha: { $gte: fechaIni, $lte: fechaFin}, tipoMedicion: String(tipoMedicion)}).sort({'fecha': 1}).select(['-_id', '-__v']);
             console.log("hecho");
             return mediciones
         } catch (error) {
@@ -348,18 +350,18 @@ module.exports = class LogicaNegocio {
      * @return Devuelve una lista de JSON. En caso de producirse un error durante la consulta,
      *  devuelve 400.
      * 
-    *  cuantas: N,
-    mac: Texto -> getUltimasMedicionesPorSensor() -->
-    lista[{
-    idUsuario: Texto
-    macSensor :Texto,
-    tipoMedicion:Texto,
-    medida: R,
-    temperatura: Z,
-    humedad: N
-    fecha: N,
-    latitud: R,
-    longitud: R}]  || 500
+     *  cuantas: N,
+        mac: Texto -> getUltimasMedicionesPorSensor() -->
+        lista[{
+        idUsuario: Texto
+        macSensor :Texto,
+        tipoMedicion:Texto,
+        medida: R,
+        temperatura: Z,
+        humedad: N
+        fecha: N,
+        latitud: R,
+        longitud: R}]  || 500
      */
         async getUltimasMedicionesPorSensor( mac, cuantas) {
 
@@ -466,40 +468,52 @@ module.exports = class LogicaNegocio {
      * Descripción:
      * realiza una operación de inserción en la tabla Sensores de la bd.
      * 
-     * @param sensor Objeto JSON con los datos que contiene un sensor.
+     * @param macSensor Texto con la MAC del sensor.
+     * @param tipoMedicion Texto con el tipo de gas que mide el sensor
+     * @param correo Texto con el correo del usuario que registra ese sensor
      * 
      * @return En caso de guardarse correctamente en la bd devuelve 200. En caso de producirse un error,
      *  devuelve 400.
      * 
-     * JSON{
-        macSensor
-        :Texto,
-        nombreSensor: Texto,
-        uuid: Texto,
+        macSensor:Texto,
         tipoMedicion:Texto,
-        fechaRegistro: N,
-        fechaUltimaMedicion: N } -> guardarSensor() ->
+        correo: Texto -> guardarSensor() ->
         respuesta: 200 || 400 <-
      * 
      */
-    async guardarSensor(sensor){
+    async guardarSensor(macSensor, tipoMedicion, correo){
         try {
-                  
-            if( sensor.macSensor && sensor.nombreSensor && sensor.tipoMedicion && sensor.fechaRegistro){
-                const nuevoSensor = new Sensor( {macSensor : String(sensor.macSensor), nombreSensor: String(sensor.nombreSensor),
-                     tipoMedicion: String(sensor.tipoMedicion), fechaRegistro: sensor.fechaRegistro} );
 
-                console.log(nuevoSensor)
+            //Comprobamos si el sensor ya está registrado
+            var sensorBuscado = await this.buscarSensor(macSensor);
+            
+            console.log("Resultado de busqueda se sensor:")
+            console.log(sensorBuscado)
+            console.log(correo)
 
-                await nuevoSensor.save();
+            if(sensorBuscado == 404){
 
-                return 200
-
+                if( macSensor && tipoMedicion && correo){
+                    const nuevoSensor = new Sensor( {macSensor : String(macSensor), tipoMedicion: String(tipoMedicion), 
+                        fechaRegistro: Date.now(), correoUsuario: String(correo)} );
+    
+                    console.log(nuevoSensor)
+    
+                    await nuevoSensor.save();
+    
+                    return 200
+    
+                }else{
+                    console.log("Error: faltan parametros");
+                    return 400
+                    
+                }
             }else{
-                console.log("Error: faltan parametros");
-                return 400
-                
+                console.log("Sensor ya registrado");
+                return 403
             }
+                  
+            
     
         } catch (error) {
             console.log("Error: " + error);
@@ -564,21 +578,19 @@ module.exports = class LogicaNegocio {
      * @return Devuelve una lista de JSON. En caso de producirse un error durante la consulta,
      *  devuelve 400.
      * 
-     * obtenerTodosLosSensores() -->
+     * obtenerTodosLosSensores() <--
      * lista [JSON  <-
         {
         macSensor:Texto,
-        nombreSensor: Texto,
-        uuid: Texto,
+        correoUsuario, Texto,
         tipoMedicion:Texto,
-        fechaRegistro: N,
-        fechaUltimaMedicion: N
+        fechaRegistro: N
         } ] || respuesta: 500
      */
      async obtenerTodosLosSensores( ) {
         try {
             //invocamos el metodo find() excluiendo los campos que pone mongodb por defecto _id y __v: .select(['-_id', '-__v')
-            const sensores = await Sensor.find().select(['-_id', '-__v']);
+            const sensores = await Sensor.find().sort({'fechaRegistro': 1}).select(['-_id', '-__v']);
             console.log("hecho");
             return sensores
           } catch (error) {
@@ -587,6 +599,54 @@ module.exports = class LogicaNegocio {
           }
        
     } // ()
+
+
+    /**
+     * obtenerSensoresInactivos()
+     * Descripción:
+     * Método para obtener una lista de los sensores que no han enviado ninguna medición en al menos las últimas 24 h.
+     * 
+     * 
+     * @return res Lista de JSON con la información de los sensores que no han estado activos en al menos las 
+     * últimas 24 h.
+     * @return 500 Codigo de error de que ha habido un fallo interno
+     * 
+     * obtenerSensoresInactivos() <-
+     * lista [JSON  <-
+        {
+        macSensor:Texto,
+        correoUsuario, Texto,
+        tipoMedicion:Texto,
+        fechaRegistro: N
+        } ] || respuesta: 500
+     * 
+     */
+    async obtenerSensoresInactivos(){
+        try{
+
+            var fechaActual = Date.now();
+
+            var sensores = await this.obtenerTodosLosSensores();
+            var res = [];
+
+            for(var i = 0; i < sensores.length; i++){
+                //Bucamos la última medición de cada sensor con getUltimasMedicionesPorSensor(mac, cuantas = 1);
+                var ultimaMedicion = await this.getUltimasMedicionesPorSensor(sensores[i].macSensor, 1);
+
+                //Comprobamos si la fecha de la última medición de cada sensor es menor que la fecha actual - 24 horas (86400000 ms)...
+                // Si se cumple, añadimos el sensor a la lista res
+                if(ultimaMedicion.fecha < (fechaActual - 86400000)){
+                    res.push(sensores[i]);
+                }
+
+            }
+
+            return res;
+
+        }catch(error){
+            return 500;
+        }
+    }
 
 
     
@@ -614,7 +674,44 @@ module.exports = class LogicaNegocio {
 
 
 
+    /**
+     * registrar()
+     * Descripción:
+     * Método para registrar el usuario y su sensor en la bbdd (en las colecciones Usuarios y Sensores)
+     * 
+     * @param {*} datosUsuario JSON con los datos del usuario: nombreUsuario: Texto, correo: Texto, contrasenya: Texto, telefono: N.
+     * @param {*} datosSensor JSON con los datos del sensor: macSensor: Texto, tipoMedicion: Texto
+     * @returns 
+     */
+    async registrar(datosUsuario, datosSensor){
+        try{
 
+            var usuarioRegistrado = await this.registrarUsuario(datosUsuario.nombreUsuario, datosUsuario.correo, 
+                datosUsuario.contrasenya, datosUsuario.telefono, datosSensor.macSensor);
+            console.log("Resultado1");
+            console.log(usuarioRegistrado);
+            console.log(datosUsuario.correo)
+
+            if(usuarioRegistrado == 200){
+                var sensorRegistrado = await this.guardarSensor(datosSensor.macSensor, datosSensor.tipoMedicion, datosUsuario.correo);
+                console.log("Resultado2");
+                console.log(sensorRegistrado);
+
+                if(sensorRegistrado == 200){
+                    return 200;
+                }else{
+                    await this.eliminarUsuario(datosUsuario.correo);
+                    return "Error sensor";
+                }
+            }else{
+                return "Error usuario";
+            }
+
+
+        }catch(error){
+            return 500;
+        }
+    }
 
 
 
@@ -645,17 +742,17 @@ module.exports = class LogicaNegocio {
      *  telefono: N --> registrarUsuario() -->
      *  respuesta: 200 || 400 || 403 || 500  <--
      */
-    async registrarUsuario(usuario){
+    async registrarUsuario(nombreUsuario, correo, contrasenya, telefono, macSensor){
         try {
             
             //Comprobamos si este correo ya está registrado
-            var usuarioYaRegistrado = await this.comprobarSiEsteUsuarioEstaRegistrado(usuario.correo);
+            var usuarioYaRegistrado = await this.comprobarSiEsteUsuarioEstaRegistrado(correo);
 
             //Si no lo está...
             if(!usuarioYaRegistrado){
-                if( usuario.nombreUsuario && usuario.correo && usuario.contrasenya && usuario.telefono){
-                    const nuevoUsuario = new Usuario( {nombreUsuario : String(usuario.nombreUsuario), correo: String(usuario.correo),
-                         contrasenya: String(usuario.contrasenya), telefono: usuario.telefono} );
+                if( nombreUsuario && correo && contrasenya && telefono && macSensor){
+                    const nuevoUsuario = new Usuario( {nombreUsuario : String(nombreUsuario), correo: String(correo),
+                         contrasenya: String(contrasenya), telefono: telefono, macSensor: String(macSensor)} );
     
                     console.log(nuevoUsuario)
     
@@ -855,13 +952,66 @@ module.exports = class LogicaNegocio {
      * 
      *  correo: Texto -> eliminarUsuario() -->
      */
-     async eliminarUsuario(idUsuario){
+     async eliminarUsuario(id){
         try {
 
             //Como solo 
-            await Usuario.deleteOne({_id : idUsuario});
+            await Usuario.deleteOne({_id : id});
             console.log("hecho");
             return 200
+        } catch (error) {
+            console.log("Error: " + error);
+            return 500
+        }
+    }
+
+
+
+
+    //==================================================================================================
+    //==================================================================================================
+    // Metodos de la logica de Ciudad
+    //==================================================================================================
+    //==================================================================================================
+
+    async buscarPoblacion(nombrePoblacion){
+        try {
+            const poblacion = await Poblacion.findOne({nombrePoblacion: String(nombrePoblacion)}).select(['-__v']);
+            console.log("hecho");
+            console.log(poblacion);
+
+            if(poblacion){
+                return poblacion;
+            }
+
+            return 404
+        } catch (error) {
+            console.log("Error: " + error);
+            return 500
+        }
+    }
+
+
+    async guardarPoblacion(poblacion){
+
+        try {
+            // Si creamos una lista con el mismo nombre que las clables del json, se añaden los valores automáticamente a cada variable            
+            if(poblacion.nombrePoblacion && poblacion.posicionSO && poblacion.posicionNE ){
+
+                const nuevaPoblacion = new Poblacion( {nombrePoblacion: poblacion.nombrePoblacion, posicionSO : {latitud: poblacion.posicionSO.latitud, longitud: poblacion.posicionSO.longitud},
+                    posicionNE : {latitud: poblacion.posicionNE.latitud, longitud: poblacion.posicionNE.longitud}});
+                console.log(nuevaPoblacion)
+                
+                //Guardamos la nueva medición
+                await nuevaPoblacion.save();
+
+                return 200
+
+            }else{
+                console.log("Error");
+                return 400     
+            }
+    
         } catch (error) {
             console.log("Error: " + error);
             return 500
