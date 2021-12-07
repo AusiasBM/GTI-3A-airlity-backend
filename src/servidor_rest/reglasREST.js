@@ -54,7 +54,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
      * 
      */
     servidorExpress.post(
-        '/mediciones', /*verifyToken,*/
+        '/mediciones', verifyToken,
         async function( peticion, respuesta ){
             console.log( " * POST /mediciones" )
             console.log(peticion.body)
@@ -75,8 +75,8 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             console.log( "datos3" )
             console.log( JSON.parse(datos[0]).medida )
            
-            //var id = peticion.token.id;
-            var id = 00;
+            var id = peticion.token.id;
+            //var id = 00;
             console.log(id)
 
             var res = await laLogica.guardarMediciones(id, datos);
@@ -183,11 +183,26 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             /*
             var id = peticion.token.id;
 
-            //Obtenemos la fecha de hoy a medianoche en milisegundos (mm-dd-yyyy 00:00:0000 -> a milisegundos)
-            //resultado.fecha = d.getMonth() +1 + "-" + d.getDate() + "-" + d.getFullYear()
-            //let fechaInicio = Date.parse(resultado.fecha)
-
             var res = await laLogica.getMedicionesDeUsuarioPorTiempo(id, fechaIni, fechaFin );
+
+            if(res != 500){
+
+                var tipoMedicion = res[0].tipoMedicion;
+                console.log(tipoMedicion)
+
+                var estadisticas = laLogica.obtenerEstadisticas(res, tipoMedicion)
+
+                console.log(estadisticas);
+
+                if(estadisticas != null){
+                    respuesta.send(estadisticas)
+                }else{
+                    respuesta.status(500).send("Ha habido un problema");
+                }
+
+            }else{
+                respuesta.status(500).send("Ha habido un problema en el servidor");
+            }
 
            */
 
@@ -426,7 +441,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
 
 
     // .......................................................
-    // GET /estadisticasMedicionesUsuario
+    // GET /datosGraficaUsuario
     //
     // Mètode de provaa!!!!!!!!!
     //
@@ -453,13 +468,23 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             /*resultado.fecha = d.getMonth() +1 + "-" + d.getDate() + "-" + d.getFullYear()
 
             var id = peticion.token.id;
-            //Obtenemos la fecha de hoy a medianoche en milisegundos (mm-dd-yyyy 00:00:0000 -> a milisegundos)
-            let fechaInicio = Date.parse(resultado.fecha)
-            var res = await laLogica.getMedicionesDeUsuarioPorTiempo(id, fechaInicio, Date.now() );
+            
+            var res = await laLogica.getMedicionesDeUsuarioPorTiempo(id, fechaIni, fechaFin);
 
-            if(res = 500){
-                respuesta.status(200).sendStatus(res)
-            }*/
+            if(res != 500){
+                var datosGrafica = laLogica.obtenerDatosParaGrafico(fechaIni, fechaFin, res)
+
+                //console.log(datosGrafica);
+
+                if(datosGrafica != null){
+                    respuesta.send(datosGrafica)
+                }else{
+                    respuesta.status(400).send("Ha habido un problema");
+                }
+            }else{
+                respuesta.status(500).send("Ha habido un problema en el servidor");
+            }
+            */
 
              //Simulación Datos de prueba (para no tener que estar midiendo datos del sensor)!!!!!!!!!!!!
             var res = [
@@ -689,50 +714,106 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
         }
     )
 
+    // .......................................................
+    // GET /mapaContaminacionActual
+    // Ruta accesible para todo el mundo (ciudadanos y usuarios registrados)
+    //
+    // .......................................................
+
+    /**
+     * GET /mapaContaminacionActual 
+     * -> Se manda a través de la URL una query ?ciudad=NombreCiudad&tipoMedicion=Gas con la ciudad y del tipo de medicion 
+     *  para llamar primero al método buscarPoblacion para obtener las coordenadas para acotar la busqueda de las mediciones a
+     *  una cuuadrícula geográfica correspondiente a la ciudad, y después llamar al método getMedicionesPorTiempoZona el cual obtiene una lista 
+     *  de mediciones de todos los usuarios registradas en la última hora, filtrando por el tipo de gas y la zona geográfica.
+     * 
+     */
+     servidorExpress.get(
+        '/mapaContaminacionActual', 
+        async function(peticion, respuesta){
+            console.log(' * GET/ mapaContaminacionActual?ciudad=NombreCiudad&tipoMedicion=Gas')
+
+            var nombreCiudad = peticion.query.ciudad;
+            var tipoMedicion = peticion.query.tipoMedicion;
+            console.log(nombreCiudad)
+            console.log(tipoMedicion)
+
+            //Obtenemos las coordenadas de la cuadrícula que engloba la ciudad
+            var poblacion = await laLogica.buscarPoblacion(nombreCiudad);
+
+            if(poblacion != 404 && poblacion != 500){
+                //Obtenemos los datos de la última hora (para que sea actual...)
+                var res = await laLogica.getMedicionesPorTiempoZona(poblacion.posicionSO, poblacion.posicionNE, Date.now() - 3600000, Date.now(), tipoMedicion);
+
+                console.log(res);
+
+                if(res!= 500){
+                    respuesta.send(res)
+                }else{
+                    respuesta.status(500).send("Ha habido un problema en el servidor");
+                }
+            }else{
+                respuesta.status(400).send("No se puede mostrar el mapa");
+            }
+
+        }
+    )//() get mapaContaminacionActual
+
+
+    // .......................................................
+    // GET /historicoMapasContaminacion
+    // Ruta accesible únicamente para usuarios que han iniciado sesión
+    //
+    // .......................................................
+
+    /**
+     * GET /historicoMapasContaminacion 
+     * -> Se manda a través de la URL una query ?ciudad=NombreCiudad&tipoMedicion=Gas&fechaDia=FechaDelDiaQueSeQuiereConsultar 
+     *  con la ciudad y del tipo de medicion para llamar primero al método buscarPoblacion para obtener las coordenadas para acotar la busqueda de las mediciones a
+     *  una cuadrícula geográfica correspondiente a la ciudad, y después llamar al método getMedicionesPorTiempoZona el cual obtiene una lista 
+     *  de mediciones de todos los usuarios registradas entre las 00:00 y las 23:59:59 del dia escogido, filtrando por el tipo de gas y la zona geográfica.
+     * 
+     */
+     servidorExpress.get(
+        '/historicoMapasContaminacion', verifyToken,
+        async function(peticion, respuesta){
+            console.log(' * GET/ historicoMapasContaminacion?ciudad=NombreCiudad&tipoMedicion=Gas&fechaDia=FechaDelDiaQueSeQuiereConsultar')
+
+            var nombreCiudad = peticion.query.ciudad;
+            var tipoMedicion = peticion.query.tipoMedicion;
+            //Enviar fecha del dia deseado a las 00:00
+            var fechaMedianoche = peticion.query.fechaDia
+            var milisegundosDia = 86399000 //Contemos hasta las 23h, 59min, 59s 
+            console.log(nombreCiudad)
+            console.log(tipoMedicion)
+
+            //Obtenemos las coordenadas de la cuadrícula que engloba la ciudad
+            var poblacion = await laLogica.buscarPoblacion(nombreCiudad);
+
+            if(poblacion != 404 && poblacion != 500){
+                //Obtenemos los datos de el dia desde las 00:00 hasta las 23:59:59
+                var res = await laLogica.getMedicionesPorTiempoZona(poblacion.posicionSO, poblacion.posicionNE, fechaMedianoche, fechaMedianoche + milisegundosDia, tipoMedicion);
+
+                console.log(res);
+
+                if(res != 500){
+                    respuesta.send(res)
+                }else{
+                    respuesta.status(500).send("Ha habido un problema en el servidor");
+                }
+            }else{
+                respuesta.status(400).send("No se puede mostrar el mapa de la zona");
+            }
+
+        }
+    )//() get mapaContaminacionActual
+
 
     // ------------------------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------------------------
     // Reglas sensores
     // ------------------------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------------------------
-
-
-    /**
-     * POST /sensor 
-     * -> se envía a través del cuerpo de la petición un JSON { macSensor: texto, nombreSensor: texto, uuid: texto, 
-     * tipoMedicion: texto, fechaRegistro: entero, fechaUltimaMedicion: entero} y primero se comprueba si ya existe un sensor 
-     * registrado con la misma MAC, y si no es así, se registra en la tabla Sensores.
-     */
-    servidorExpress.post(
-        '/sensor', verifyToken,
-        async function(peticion, respuesta){
-            console.log(" * POST/sensor ")
-
-            var datos =  peticion.body;
-
-            console.log(datos)
-
-            //Comprobamos si el sensor ya está añadido en la tabla Sensors (sólo puede haber una MAC para cada sensor)
-            var sensor = await laLogica.buscarSensor(datos.macSensor);
-            console.log(sensor)
-
-            //Si la respuesta es 404 significa que no hay ningun sensor con esa MAC almacenada y procedemos a guardarlo
-            if(sensor == 404){
-                var res = await laLogica.guardarSensor(datos);
-
-                console.log(res)
-                if(res == 200){
-                    respuesta.status(200).send("Se ha dado de alta un nuevo sensor\n")
-                }else{
-                    respuesta.status(400).sendStatus(res)
-                }
-            }else{
-                respuesta.status(200).send("El sensor ya está registrado\n")
-            }
-        }
-    )//() post sensor
-
-
 
     /**
      * GET /todosLosSensores 
@@ -788,7 +869,57 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             respuesta.send(res)
             return
             
-    })//get todosLosSensores
+    })//get sensor
+
+
+    /**
+     * GET /sensor?mac= -> se envía a través de la URL una query mac con la MAC del dispositivo requerido y devuelve un JSON 
+     * { macSensor: texto, nombreSensor: texto, uuid: texto, tipoMedicion: texto, fechaRegistro: Date, fechaUltimaMedicion: Date} 
+     * con los datos de ese sensor.
+     */
+     servidorExpress.get(
+        '/sensoresInactivos', verifyToken,
+        async function( peticion, respuesta){
+            console.log(" * GET/sensoresInactivos ")
+
+            var res = await laLogica.obtenerSensoresInactivos();
+            console.log(res)
+
+            if (res == 500){
+                respuesta.status(500).send("Error en el servidor")
+            }else{
+                //Ok
+                respuesta.status(200).send(res)
+            }
+
+            
+            
+    })//get sensor
+
+
+    servidorExpress.post(
+        '/eliminarSensor', verifyToken,
+        async function(peticion, respuesta){
+            console.log(" * POST/eliminarSensor ")
+
+            var datos = peticion.body;
+            console.log(datos.macSensor)
+
+            var res = await laLogica.eliminarSensorPorMac(datos.macSensor);
+
+            console.log(res)
+            if(res == 200){
+                respuesta.status(200).send("Sensor eliminado correctamente");
+                
+            }else{
+                respuesta.status(res);
+            }
+            
+        }
+    )//
+
+
+
 
 
 
@@ -802,39 +933,24 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
 
 
     /**
-     * POST /registrarUsuario
-     * -> Se le pasa en el cuerpo de la petición un JSON {nombreUsuario: Texto, correo: Texto, contrasenya:Texto, telefono: N}
-     * y llama al método registrarUsuario de la lógica de negocio para comprobar primero si el correo ya está registrado, y si 
-     * no lo está procede a guardar el usuario.
+     * POST /registrar
+     * -> Se le pasa en el cuerpo de la petición un JSON {usuario{nombreUsuario: Texto, correo: Texto, contrasenya:Texto, telefono: N},
+     * sensor{macSensor: Texto, tipoMedicion: Texto}
+     * y llama al método registrar de la lógica de negocio para primero guardar el usuario y si se guarda de forma correcta registrar el sensor.
      * 
      */
     servidorExpress.post(
-        '/registrarUsuario',
+        '/registrar',
         async function(peticion, respuesta){
-            console.log(" * POST/registrarUsuario ")
+            console.log(" * POST/registrar ")
 
-            var datos;
+            var datos = peticion.body;
 
-            console.log("ENTRA EN registro usuario")
+            var usuario = datos.usuario;
+            var sensor = datos.sensor;
 
-            if(peticion.headers['correo']){
-                datos =  {
-                    nombreUsuario: peticion.headers['usuario'],
-                    correo: peticion.headers['correo'],
-                    contrasenya: peticion.headers['contrasenya'],
-                    telefono: peticion.headers['telefono'],
-                };
-                console.log("entra a headers")
-            }else{
-                
-                datos = peticion.body;
-                console.log("entra a body")
-            }
-
-            console.log(datos)
-
-            //Llamamos a registrarUsuario en la lógica del negocio
-            var res = await laLogica.registrarUsuario(datos);
+            //Llamamos a registrar en la lógica del negocio
+            var res = await laLogica.registrar(usuario, sensor);
             console.log(res)
 
             if(res == 200){
@@ -883,7 +999,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
 
             console.log(datos)
 
-            //Comprobamos si el sensor ya está añadido en la tabla Sensors (sólo puede haber una MAC para cada sensor)
+            //Comprobamos si el usuario ya está registrado y coincide con la contrasenya
             var res = await laLogica.buscarUsuario(datos.correo, datos.contrasenya);
             console.log(res)
 
@@ -893,8 +1009,10 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                 respuesta.status(500).sendStatus(res);
             }else{
                 const token = jwt.sign({
-                    id: res._id
-                }, process.env.TOKEN_SECRET)
+                    id: res._id,
+                    rol: res.rol
+                }, process.env.TOKEN_SECRET,
+                { expiresIn: '1800s' })
                 
                 respuesta.header('auth-token', token).json({
                     error: null,
@@ -908,7 +1026,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
 
 
     /**
-     * POST /registrarUsuario
+     * POST /eliminarUsuario
      * -> Se le pasa en el cuerpo de la petición un JSON {nombreUsuario: Texto, correo: Texto, contrasenya:Texto, telefono: N}
      * y llama al método registrarUsuario de la lógica de negocio para comprobar primero si el correo ya está registrado, y si 
      * no lo está procede a guardar el usuario.
@@ -930,6 +1048,36 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                 console.log(res)
             }else{
                 respuesta.status(res);
+            }
+            
+        }
+    )//() post eliminar usuario
+
+
+    // ------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------
+    // Reglas poblaciones
+    // ------------------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------------------
+
+    servidorExpress.post(
+        '/registrarPoblacion', /*verifyToken,*/
+        async function(peticion, respuesta){
+            console.log(" * POST/registrarPoblacion ")
+
+            //var id = peticion.token.id;
+            //console.log(id)
+
+            var datos = peticion.body;
+
+            var res = await laLogica.buscarPoblacion(datos.nombrePoblacion);
+
+            console.log(res)
+            if(res == 404){
+                await laLogica.guardarPoblacion(datos);
+                respuesta.status(200).send("Poblacion registrada exitosamente\n")
+            }else{
+                respuesta.status(400).send("Población ya registradada\n")
             }
             
         }

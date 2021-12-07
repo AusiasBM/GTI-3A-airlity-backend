@@ -32,7 +32,7 @@ const SensorSchema = new Schema ({
         required: true,
     },
 
-    nombreSensor : {
+    correoUsuario : {
         type: String,
         required: true,
     },

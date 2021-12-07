@@ -18,21 +18,19 @@ describe( "Test: insertar un sensor, recuperar todos los sensores, buscar un sen
     // ....................................................
     // ....................................................
 
-    it( "Puedo insertar un sensor",
+    it( "Puedo insertar un sensor a partir de una mac, el tipo de medición y un correo de un usuario",
         async function() {
             try{
-                const d = new Date();
-            var t = d.getTime();
             
             var sensor = 
             {
                 macSensor: "00:00:00:00:00:00",
-                nombreSensor : "SensorDeProva",
                 tipoMedicion: "PROVA",
-                fechaRegistro: t
             }
+
+            correoUsuario = "testSensor@test.com";
             
-            var res = await laLogica.guardarSensor(sensor)
+            var res = await laLogica.guardarSensor(sensor.macSensor, sensor.tipoMedicion, correoUsuario)
             assert.equal( res, 200 , "¿No se ha insertado?" )
             } catch( err ) {
             // assert.equal( 0, 1, "cerrar conexión a BD fallada: " + err)
@@ -47,8 +45,8 @@ describe( "Test: insertar un sensor, recuperar todos los sensores, buscar un sen
         //Comprovar qué asignatura/s está matriculado
         var res = await laLogica.obtenerTodosLosSensores()
 
-        assert.equal( res.length, res.length , "¿no hay un resulado?" )
-        assert.equal( res[res.length-1].nombreSensor, "SensorDeProva", "¿El nombre del último sensor no es SensorDeProva?" )
+        assert.equal( res[res.length-1].correoUsuario, "testSensor@test.com", "¿El último sensor registrado no pertenece al usuario con correo testSensor@test.com?" )
+        assert.equal( res[res.length-1].macSensor, "00:00:00:00:00:00", "¿El nombre del último sensor no es SensorDeProva?" )
         
     })//it()
 
@@ -63,12 +61,13 @@ describe( "Test: insertar un sensor, recuperar todos los sensores, buscar un sen
 
         console.log(res)
         assert.equal( res.macSensor, "00:00:00:00:00:00", "¿La MAC del sensor encontrado no es 00:00:00:00:00:00?" )
-        assert.equal( res.nombreSensor, "SensorDeProva", "¿El nombre del sensor encontrado no es SensorDeProva?" )
+        assert.equal( res.correoUsuario, "testSensor@test.com", "¿No pertenece al usuario con correo testSensor@test.com?" )
         
     })//it()
 
 
     // ....................................................
+    //Eliminamos los sensores de prueba después de pasar el test
     // ....................................................
     it("Comprovar que puedo eliminar un sensor por su MAC", async function(){
 
@@ -79,7 +78,7 @@ describe( "Test: insertar un sensor, recuperar todos los sensores, buscar un sen
         assert.equal( res, 200, "¿No se ha eliminado?" )
     })//it()
 
-    //Eliminamos los sensores de prueba después de pasar el test
+    
     
    
 

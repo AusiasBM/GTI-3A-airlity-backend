@@ -10,9 +10,7 @@ describe( "Test: comprobar los métodos relacionados con los usuarios", function
     // ....................................................
     var laLogica = new LogicaNegocio()
 
-    //Eliminamos el usuario de prueba antes de iniciar el test (por si acaso...)
-    var correo = "prova@prova.com";
-    laLogica.eliminarUsuario(correo);
+    var idUsuarioPrueba;
 
     // ....................................................
     // ....................................................
@@ -29,7 +27,7 @@ describe( "Test: comprobar los métodos relacionados con los usuarios", function
                 telefono: 987654321
             }
             
-            var res = await laLogica.registrarUsuario(usuario)
+            var res = await laLogica.registrarUsuario(usuario.nombreUsuario, usuario.correo, usuario.contrasenya, usuario.telefono, "11:11:11:11:11:11")
             assert.equal( res, 200 , "¿No se ha insertado?" )
             } catch( err ) {
             // assert.equal( 0, 1, "cerrar conexión a BD fallada: " + err)
@@ -66,7 +64,7 @@ describe( "Test: comprobar los métodos relacionados con los usuarios", function
                 telefono: 987654321
             }
             
-            var res = await laLogica.registrarUsuario(usuario)
+            var res = await laLogica.registrarUsuario(usuario.nombreUsuario, usuario.correo, usuario.contrasenya, usuario.telefono, "11:11:11:11:11:11")
             assert.equal( res, 403 , "¿Se ha vuelto a insertar?" )
             } catch( err ) {
             // assert.equal( 0, 1, "cerrar conexión a BD fallada: " + err)
@@ -100,6 +98,8 @@ describe( "Test: comprobar los métodos relacionados con los usuarios", function
         //Comprovar qué asignatura/s está matriculado
         var res = await laLogica.buscarUsuario(correo, contrasenya)
 
+        idUsuarioPrueba = res.id;
+
         assert.equal( res.correo, "prova@prova.com", "¿no es el usuario prova@prova.com?" )
         assert.equal( res.telefono, 987654321, "¿El telefono del usuario no es 987654321?" )
         
@@ -117,7 +117,7 @@ describe( "Test: comprobar los métodos relacionados con los usuarios", function
 
         var res = await laLogica.buscarUsuario(correo, contrasenya)
 
-        assert.equal( res.macSensor, null, "¿La mac del sensor del usuario no es null?" )
+        assert.equal( res.macSensor, "11:11:11:11:11:11", "¿La mac del sensor del usuario no es 11:11:11:11:11:11?" )
 
         var res = await laLogica.actualizarMacSensorUsuario(res.id, mac);
 
@@ -135,8 +135,7 @@ describe( "Test: comprobar los métodos relacionados con los usuarios", function
     // ....................................................
     it("Comprovar que puedo eliminar un usuario por su correo", async function(){
 
-        var correo = "prova@prova.com";
-        var res = await laLogica.eliminarUsuario(correo);
+        var res = await laLogica.eliminarUsuario(idUsuarioPrueba);
 
         console.log(res)
         assert.equal( res, 200, "¿No se ha eliminado?" )

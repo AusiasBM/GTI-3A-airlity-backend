@@ -9,29 +9,6 @@ var assert = require ('assert')
 const IP_PUERTO="http://localhost:3500"
 
 
-const jwt = require('jsonwebtoken')
-const { verify } = require('crypto')
-
- // middleware to validate token (rutas protegidas)
- const verifyToken = (token) => {
-    
-     if (!token) return false
-     try {
-        
-        jwt.verify(token, process.env.TOKEN_SECRET, function(err, token) {
-            if (err) {
-              return false
-            } else {
-              return token
-             
-            }
-          });
-        
-     } catch (error) {
-         res.status(400).json({error: 'token no es válido'})
-     }
- }
-
 
 // ........................................................
 // main ()
@@ -43,12 +20,13 @@ describe( "Test 1 : Recuerda arrancar el servidor", function() {
 
     // ....................................................
     // ....................................................
-    it( "probar POST /registrarUsuario", function( hecho ) {
+    it( "probar POST /registrar", function( hecho ) {
        
-        var datos = {"nombreUsuario":"testRegistro","correo":"testNode@node.com", "contrasenya":"123","telefono": "987654321"}
+        var datos = {"usuario":{"nombreUsuario":"testRegistro","correo":"testNode@node.com", "contrasenya":"123","telefono": 987654321},
+                    "sensor":{"macSensor": "00:00:00:00:00:00", "tipoMedicion":"C02"}}
 
         request.post(
-            { url : IP_PUERTO+"/registrarUsuario", headers : { 'User-Agent' : 'airlity', 'Content-Type' : 'application/json' }, body : JSON.stringify( datos )},
+            { url : IP_PUERTO+"/registrar", headers : { 'User-Agent' : 'airlity', 'Content-Type' : 'application/json' }, body : JSON.stringify( datos )},
             function( err, respuesta ) {
 
                 
@@ -137,7 +115,7 @@ describe( "Test 1 : Recuerda arrancar el servidor", function() {
     // ....................................................
     it("probar POST /eliminarUsuario", function(hecho){
         request.post(
-            {url: IP_PUERTO + "/eliminarUsuario", headers : {'Authorization': token, 'User-Agent' : 'airlity'}},
+            {url: IP_PUERTO + "/eliminarUsuario", headers : {'Authorization': token, 'User-Agent' : 'airlity', 'Content-Type' : 'application/json'}},
             function(err, res){
                 assert.equal( err, null, "¿ha habido un error?" )
                 assert.equal( res.statusCode, 200, "¿El código no es 200 (OK)" )
@@ -145,6 +123,23 @@ describe( "Test 1 : Recuerda arrancar el servidor", function() {
             }
         )
     })// it
+
+
+    // ....................................................
+    // ....................................................
+    it("probar POST /eliminarSensor", function(hecho){
+        var datos = {"macSensor": "00:00:00:00:00:00"};
+        request.post(
+            {url: IP_PUERTO + "/eliminarSensor", headers : {'Authorization': token, 'User-Agent' : 'airlity', 'Content-Type' : 'application/json'}, body : JSON.stringify( datos )},
+            function(err, res){
+                assert.equal( err, null, "¿ha habido un error?" )
+                assert.equal( res.statusCode, 200, "¿El código no es 200 (OK)" )
+                hecho()
+            }
+        )
+    })// it
+
+
 
 
 

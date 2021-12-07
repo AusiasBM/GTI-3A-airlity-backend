@@ -286,9 +286,6 @@
             return "Excelente";
         }
 
-
-
-
     }
 
     valoracionMediaMediciones(media, umbralMaximoDiario){
