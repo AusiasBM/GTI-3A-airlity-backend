@@ -49,3 +49,5 @@ DOCKER:
     En caso de no utilizar docker se puede utilizar un contenedor de mongo que está alojado en 217.76.155.97:27080 de esta forma no hay que estar arrancando y parando docker cuando
     estamos haciendo pruebas o queremos que los datos que provemos aquí se reflejen en la web desde otros ordenadores.
 
+    SUBIR EL CONTENEDOR AL SERVIDOR EN PRODUCCIÓN:
+        - Cambiar la conexión a la BBDD
