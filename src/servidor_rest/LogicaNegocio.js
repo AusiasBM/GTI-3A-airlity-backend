@@ -699,10 +699,16 @@ module.exports = class LogicaNegocio {
 
                 if(sensorRegistrado == 200){
                     return 200;
+
+                }else if(sensorRegistrado == 400){
+                    await this.eliminarUsuario(datosUsuario.correo);
+                    return 400;
                 }else{
                     await this.eliminarUsuario(datosUsuario.correo);
                     return "Error sensor";
                 }
+            }else if(usuarioRegistrado == 400){
+                return 400;
             }else{
                 return "Error usuario";
             }
@@ -952,11 +958,11 @@ module.exports = class LogicaNegocio {
      * 
      *  correo: Texto -> eliminarUsuario() -->
      */
-     async eliminarUsuario(id){
+     async eliminarUsuario(correo){
         try {
 
             //Como solo 
-            await Usuario.deleteOne({_id : id});
+            await Usuario.deleteOne({correo : correo});
             console.log("hecho");
             return 200
         } catch (error) {

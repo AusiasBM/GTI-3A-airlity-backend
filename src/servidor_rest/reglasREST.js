@@ -957,9 +957,11 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                 respuesta.status(200).send("Se ha dado de alta un nuevo usuario\n");
             }else if(res == 400){
                 respuesta.status(400).send("Error: faltan parametros\n")
-            }if(res == 403){
+            }else if(res == "Error usuario"){
                 respuesta.status(403).send("Operación no autorizada: el usuario ya está registrado\n")
-            }else if (res == 500){
+            }else if(res == "Error sensor"){
+                respuesta.status(403).send("Operación no autorizada: el sensor ya está registrado\n")
+            }else{
                 respuesta.status(500).sendStatus(res);
             }
             
