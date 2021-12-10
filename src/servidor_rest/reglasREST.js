@@ -58,26 +58,27 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
         async function( peticion, respuesta ){
             console.log( " * POST /mediciones" )
             console.log(peticion.body)
-            var datos =  peticion.body
+            //var datos =  peticion.body
 
-           /* Datos de prueba
+            var id = peticion.token.id;
+            //var id = 00;
+            console.log(id)
+            //Datos de prueba
            var datos = [
-                '{"macSensor":"00:00:00:00:00:00","tipoMedicion":"O3", "medida":123,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1234567890123}',
-                '{"macSensor":"00:00:00:00:00:00","tipoMedicion":"O3", "medida":456,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1234567890123}'
-            ]*/
+                '{"macSensor":"http://rootear.com/author/txaber-guereta","tipoMedicion":"O3", "medida":123,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1639131538201}',
+                '{"macSensor":"00:00:00:00:00:00","tipoMedicion":"O3", "medida":456,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1639131538201}'
+            ]
             //A ver como estan organizados los datos...
             console.log( "datos" )
-            console.log( datos[0] )
+            console.log( datos )
 
             console.log( "datos2" )
-            console.log( JSON.parse(datos[0]) )
+            console.log( JSON.parse(datos[0] ))
 
             console.log( "datos3" )
             console.log( JSON.parse(datos[0]).medida )
            
-            var id = peticion.token.id;
-            //var id = 00;
-            console.log(id)
+            
 
             var res = await laLogica.guardarMediciones(id, datos);
             
@@ -882,6 +883,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
         async function( peticion, respuesta){
             console.log(" * GET/sensoresInactivos ")
 
+            //var rol = 
             var res = await laLogica.obtenerSensoresInactivos();
             console.log(res)
 

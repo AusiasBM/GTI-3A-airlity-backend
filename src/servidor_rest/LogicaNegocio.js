@@ -628,14 +628,16 @@ module.exports = class LogicaNegocio {
 
             var sensores = await this.obtenerTodosLosSensores();
             var res = [];
+            console.log(res.length)
 
             for(var i = 0; i < sensores.length; i++){
                 //Bucamos la última medición de cada sensor con getUltimasMedicionesPorSensor(mac, cuantas = 1);
                 var ultimaMedicion = await this.getUltimasMedicionesPorSensor(sensores[i].macSensor, 1);
+                console.log(ultimaMedicion)
 
                 //Comprobamos si la fecha de la última medición de cada sensor es menor que la fecha actual - 24 horas (86400000 ms)...
                 // Si se cumple, añadimos el sensor a la lista res
-                if(ultimaMedicion.fecha < (fechaActual - 86400000)){
+                if(ultimaMedicion.fecha < (fechaActual - 86400000) || ultimaMedicion.length == 0){
                     res.push(sensores[i]);
                 }
 
