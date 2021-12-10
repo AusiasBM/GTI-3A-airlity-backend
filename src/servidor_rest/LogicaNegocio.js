@@ -635,7 +635,7 @@ module.exports = class LogicaNegocio {
 
                 //Comprobamos si la fecha de la última medición de cada sensor es menor que la fecha actual - 24 horas (86400000 ms)...
                 // Si se cumple, añadimos el sensor a la lista res
-                if(ultimaMedicion.fecha < (fechaActual - 86400000)){
+                if(ultimaMedicion.fecha < (fechaActual - 86400000) || ultimaMedicion.length == 0){
                     res.push(sensores[i]);
                 }
 

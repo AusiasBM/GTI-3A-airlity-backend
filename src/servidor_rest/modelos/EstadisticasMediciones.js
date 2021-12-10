@@ -33,6 +33,7 @@
      * }
      * 
      * @param medicionesFiltradasPorPeriodo Lista de mediciones de un periodo concreto
+     * @param tipoMedicion Lista de mediciones de un periodo concreto
      * 
      * @returns objeto JSON {media: R, tiempo: N, valorMaximo: R, valoracionCalidadAire: Texto
      *                      advertencias: [JSON{fechaIni: N, fechaFin: N, periodoTiempoTranscurrido: N, mediaPeriodo: R, valorMaximoPeriodo: R}]}

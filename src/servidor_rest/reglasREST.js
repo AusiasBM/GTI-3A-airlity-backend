@@ -873,7 +873,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
 
 
     /**
-     * GET /sensor?mac= -> se envía a través de la URL una query mac con la MAC del dispositivo requerido y devuelve un JSON 
+     * GET /sensoresInactivos -> se envía a través de la URL una query mac con la MAC del dispositivo requerido y devuelve un JSON 
      * { macSensor: texto, nombreSensor: texto, uuid: texto, tipoMedicion: texto, fechaRegistro: Date, fechaUltimaMedicion: Date} 
      * con los datos de ese sensor.
      */
