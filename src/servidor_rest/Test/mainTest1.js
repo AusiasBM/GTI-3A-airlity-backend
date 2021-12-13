@@ -1,5 +1,6 @@
 // ........................................................
 const LogicaNegocio = require( "../logicaNegocio.js" )
+const Medicion = require("../modelos/Medicion");
 var assert = require ('assert')
 
 
@@ -12,12 +13,80 @@ describe( "Test: Probar los métodos de la lógica de negocio relacionados con l
     // ....................................................
     var laLogica = new LogicaNegocio()
 
-    //Borramos las medidas de prueba de la bbdd antes de empezar (por si acaso hubiese...)
-    var macPrueba1 = "00:00:00:00:00:00"
-    var macPrueba2 = "11:11:11:11:11:11"
 
-    laLogica.eliminarMedicionesPorMac(macPrueba1)
-    laLogica.eliminarMedicionesPorMac(macPrueba2)
+    beforeEach(async function() {
+        // runs before each test in this block
+
+        //Añadimos antes de cada prueba estas medidas
+        var medidas = [
+            {
+                macSensor:"00",
+                tipoMedicion: "CO2", 
+                medida: 1232,
+                temperatura: 20,
+                humedad: 50,
+                fecha: 1,
+                latitud: 123.5,
+                longitud: 321.5
+            },
+            {
+                macSensor:"00",
+                tipoMedicion: "CO2", 
+                medida: 1233,
+                temperatura: 20,
+                humedad: 50,
+                fecha: 166632515522844,
+                latitud: 123.5,
+                longitud: 121.5
+            },
+            {
+                macSensor:"00",
+                tipoMedicion: "CO2", 
+                medida: 1234,
+                temperatura: 20,
+                humedad: 50,
+                fecha: 166632515522845,
+                latitud: 223.5,
+                longitud: 221.5
+            },
+            {
+                macSensor:"11",
+                tipoMedicion: "CO2", 
+                medida: 1235,
+                temperatura: 20,
+                humedad: 50,
+                fecha: 166632515522846,
+                latitud: 323.5,
+                longitud: 321.5
+            }
+
+        ]
+
+        var id = 1;
+        for(var i  = 0; i < medidas.length; i++){
+            const nuevaMedicion = new Medicion( {idUsuario: id, macSensor : String(medidas[i].macSensor), tipoMedicion: String(medidas[i].tipoMedicion), medida : medidas[i].medida, temperatura:medidas[i].temperatura,
+                humedad:medidas[i].humedad, fecha:medidas[i].fecha, latitud:medidas[i].latitud, longitud: medidas[i].longitud } );
+           console.log(nuevaMedicion)
+           
+           //Guardamos la nueva medición
+           await nuevaMedicion.save();
+
+        }
+        
+
+      });
+    
+    afterEach(async function() {
+    // runs after each test in this block
+
+        //Borramos las medidas después de cada prueba
+        var macPrueba1 = "00"
+        var macPrueba2 = "11"
+        await Medicion.deleteMany({macSensor : String(macPrueba1)});
+        await Medicion.deleteMany({macSensor : String(macPrueba2)});
+
+    });
+    
 
     // ....................................................
     // ....................................................
@@ -26,7 +95,7 @@ describe( "Test: Probar los métodos de la lógica de negocio relacionados con l
             try{
             
             medida = {
-                macSensor:"00:00:00:00:00:00",
+                macSensor:"22",
                 tipoMedicion: "CO2", 
                 medida: 1232,
                 temperatura: 20,
@@ -39,7 +108,16 @@ describe( "Test: Probar los métodos de la lógica de negocio relacionados con l
             //Me invento un id de un usuario
             id = 1;
             var res = await laLogica.guardarMedicion(id, medida)
+
             assert.equal( res, 200 , "¿No se ha insertado?" )
+
+            var res2 = await Medicion.find({macSensor : String(medida.macSensor)});
+            assert.equal(res2.length, 1, "¿No hay una sola medicion del sensor con la mac 22?")
+            assert.equal(res2[0].macSensor, "22", "¿La mac del sensor no es 22?")
+
+
+            await Medicion.deleteMany({macSensor : String(medida.macSensor)});
+
             } catch( err ) {
             // assert.equal( 0, 1, "cerrar conexión a BD fallada: " + err)
                 throw new Error( "Error: " + err)
@@ -64,9 +142,9 @@ describe( "Test: Probar los métodos de la lógica de negocio relacionados con l
 
             //Asegurarse de que la fecha sea lo suficientemente grande ya que filtra por la fecha en orden descendiente (la primera medida de las 2 tiene una fecha mayor):
             var medidas = [
-                '{ "macSensor": "00:00:00:00:00:00",  "tipoMedicion": "CO2", "medida": 1233,"temperatura": 20,"humedad": 50,"fecha": 166632515522844,"latitud": 123.5,"longitud": 121.5}',
-                '{ "macSensor": "00:00:00:00:00:00",  "tipoMedicion": "CO2", "medida": 1234,"temperatura": 20,"humedad": 50,"fecha": 166632515522845,"latitud": 223.5,"longitud": 221.5}',
-                '{ "macSensor": "11:11:11:11:11:11",  "tipoMedicion": "CO2", "medida": 1235,"temperatura": 20,"humedad": 50,"fecha": 166632515522846,"latitud": 323.5,"longitud": 321.5}'
+                '{ "macSensor": "00",  "tipoMedicion": "CO2", "medida": 1233,"temperatura": 20,"humedad": 50,"fecha": 166632515522844,"latitud": 123.5,"longitud": 121.5}',
+                '{ "macSensor": "00",  "tipoMedicion": "CO2", "medida": 1234,"temperatura": 20,"humedad": 50,"fecha": 166632515522845,"latitud": 223.5,"longitud": 221.5}',
+                '{ "macSensor": "11",  "tipoMedicion": "CO2", "medida": 1235,"temperatura": 20,"humedad": 50,"fecha": 166632515522846,"latitud": 323.5,"longitud": 321.5}'
             ]
 
             //Me invento un id de un usuario
@@ -174,7 +252,7 @@ describe( "Test: Probar los métodos de la lógica de negocio relacionados con l
 
         console.log(res)
         assert.equal( res.length, 1 , "¿No hay 1 medidas?" )
-        assert.equal( res[0].macSensor, "00:00:00:00:00:00", "¿La primera medida no tiene la MAC 00:00:00:00:00:00?" )
+        assert.equal( res[0].macSensor, "00", "¿La primera medida no tiene la MAC 00?" )
         assert.equal( res[0].medida, 1232, "¿La medida no es 1232?" )
         assert.equal( res[0].fecha, 1, "¿La fecha de la medida no es 1?" )
         
@@ -187,7 +265,7 @@ describe( "Test: Probar los métodos de la lógica de negocio relacionados con l
 
         console.log(res)
         assert.equal( res.length, 1 , "¿No hay 1 medidas?" )
-        assert.equal( res[0].macSensor, "00:00:00:00:00:00", "¿La primera medida no tiene la MAC 00:00:00:00:00:00?" )
+        assert.equal( res[0].macSensor, "00", "¿La primera medida no tiene la MAC 00?" )
         assert.equal( res[0].medida, 1232, "¿La medida no es 1232?" )
         assert.equal( res[0].fecha, 1, "¿La fecha de la medida no es 1?" )
         
@@ -200,10 +278,10 @@ describe( "Test: Probar los métodos de la lógica de negocio relacionados con l
 
         console.log(res)
         assert.equal( res.length, 3 , "¿No hay 3 medidas?" )
-        assert.equal( res[0].macSensor, "00:00:00:00:00:00", "¿La primera medida no tiene la MAC 00:00:00:00:00:00?" )
+        assert.equal( res[0].macSensor, "00", "¿La primera medida no tiene la MAC 00?" )
         assert.equal( res[0].fecha, 166632515522844, "¿La medida no es 166632515522844?" )
         
-        assert.equal( res[res.length-1].macSensor, "11:11:11:11:11:11", "¿La ultima medida no tiene la MAC 11:11:11:11:11:11?" )
+        assert.equal( res[res.length-1].macSensor, "11", "¿La ultima medida no tiene la MAC 11?" )
         assert.equal( res[res.length-1].fecha, 166632515522846, "¿La fecha de la medida no es 166632515522846?" )
         
     })//it()
@@ -211,13 +289,13 @@ describe( "Test: Probar los métodos de la lógica de negocio relacionados con l
 
     it("Comprovar que puedo filtrar las últimas 2 mediciones de un sensor por la MAC del sensor", async function(){
         
-        var mac = "00:00:00:00:00:00"
+        var mac = "00"
         var res = await laLogica.getUltimasMedicionesPorSensor(mac, 2)
 
         console.log(res)
         assert.equal( res.length, 2 , "¿No hay 2 medidas?" )
-        assert.equal( res[0].macSensor, "00:00:00:00:00:00", "¿La primera medida no tiene la MAC 00:00:00:00:00:00?" )
-        assert.equal( res[res.length-1].macSensor, "00:00:00:00:00:00", "¿La última medida no tiene la MAC 00:00:00:00:00:00?" )
+        assert.equal( res[0].macSensor, "00", "¿La primera medida no tiene la MAC 00?" )
+        assert.equal( res[res.length-1].macSensor, "00", "¿La última medida no tiene la MAC 00?" )
         assert.equal( res[0].medida, 1234, "¿La primera medida no es 1234?" )
         assert.equal( res[res.length-1].medida, 1233, "¿La segunda medida no es 1233?" )
         
@@ -226,13 +304,13 @@ describe( "Test: Probar los métodos de la lógica de negocio relacionados con l
 
     it("Ahora comprovar que puedo filtrar las últimas 3 mediciones de un sensor por la MAC del sensor", async function(){
         
-        var mac = "00:00:00:00:00:00"
+        var mac = "00"
         var res = await laLogica.getUltimasMedicionesPorSensor(mac, 3)
         
         console.log(res)
         assert.equal( res.length, 3 , "¿No hay 3 medidas?" )
-        assert.equal( res[0].macSensor, "00:00:00:00:00:00", "¿La primera medida no tiene la MAC 00:00:00:00:00:00?" )
-        assert.equal( res[res.length-1].macSensor, "00:00:00:00:00:00", "¿La última medida no tiene la MAC 00:00:00:00:00:00?" )
+        assert.equal( res[0].macSensor, "00", "¿La primera medida no tiene la MAC 00?" )
+        assert.equal( res[res.length-1].macSensor, "00", "¿La última medida no tiene la MAC 00?" )
         assert.equal( res[res.length-1].medida, 1232, "¿La segunda medida no es 1232?" )
         
     })//it()
@@ -241,10 +319,10 @@ describe( "Test: Probar los métodos de la lógica de negocio relacionados con l
 
     // ....................................................
     // ....................................................
-    it("Comprovar que puedo eliminar las mediciones creadas en el test por su MAC", async function(){
+    it("Comprovar que puedo eliminar todas las mediciones de un sensor creadas en el test por su MAC", async function(){
 
-        var mac = "00:00:00:00:00:00";
-        var mac2 = "11:11:11:11:11:11";
+        var mac = "00";
+        var mac2 = "11";
 
          //Borramos las medidas de prueba para restaurar la bbdd
         var res = await laLogica.eliminarMedicionesPorMac(mac)

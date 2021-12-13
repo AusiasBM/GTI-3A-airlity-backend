@@ -896,7 +896,10 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             
     })//get sensor
 
-
+    /**
+     * POST /eliminarSensor -> se envía en el cuerpo de la petición un JSON con la mac del sensor que se quiere eliminar y
+     * devuelve un código 200 si se ha borrado correctamente, o 500 en caso de tener algún error en el servidor
+     */
     servidorExpress.post(
         '/eliminarSensor', verifyToken,
         async function(peticion, respuesta){
@@ -1054,36 +1057,6 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             
         }
     )//() post eliminar usuario
-
-
-    // ------------------------------------------------------------------------------------------------
-    // ------------------------------------------------------------------------------------------------
-    // Reglas poblaciones
-    // ------------------------------------------------------------------------------------------------
-    // ------------------------------------------------------------------------------------------------
-
-    servidorExpress.post(
-        '/registrarPoblacion', /*verifyToken,*/
-        async function(peticion, respuesta){
-            console.log(" * POST/registrarPoblacion ")
-
-            //var id = peticion.token.id;
-            //console.log(id)
-
-            var datos = peticion.body;
-
-            var res = await laLogica.buscarPoblacion(datos.nombrePoblacion);
-
-            console.log(res)
-            if(res == 404){
-                await laLogica.guardarPoblacion(datos);
-                respuesta.status(200).send("Poblacion registrada exitosamente\n")
-            }else{
-                respuesta.status(400).send("Población ya registradada\n")
-            }
-            
-        }
-    )//() post registrar usuario
 
 
 }

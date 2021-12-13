@@ -3,6 +3,10 @@
 // ........................................................
 var request = require ('request')
 var assert = require ('assert')
+const sinon = require('sinon');
+
+const Usuario = require("../modelos/Usuario")
+const Sensor = require("../modelos/Sensor")
 // ........................................................
 // ........................................................
 
@@ -17,6 +21,46 @@ describe( "Test 1 : Recuerda arrancar el servidor", function() {
     
 
     var token;
+
+    //const tokens = sinon.stub().returns(next());
+
+    before(async function() {
+        // runs before each test in this block
+
+        //Añadimos antes de cada prueba este usuario 
+        var usuario = 
+            {
+                nombreUsuario : "test",
+                correo: "test@test.com",
+                contrasenya: "1234",
+                telefono: 987654321,
+                macSensor: "11"
+            }
+        const nuevoUsuario = new Usuario( {nombreUsuario : String(usuario.nombreUsuario), correo: String(usuario.correo),
+            contrasenya: String(usuario.contrasenya), telefono: usuario.telefono, macSensor: String(usuario.macSensor)} );
+
+        await nuevoUsuario.save();
+
+        const nuevoSensor = new Sensor( {macSensor : String(usuario.macSensor), tipoMedicion: String("CO"), 
+            fechaRegistro: Date.now(), correoUsuario: String(usuario.correo)} );
+
+        await nuevoSensor.save();
+    });
+    
+    after(async function() {
+    // runs after each test in this block
+
+        //Borramos el usuario creado después de cada prueba
+        var correo =  "test@test.com"
+        await Usuario.deleteMany({correo : correo});
+        var correo =  "testNode@node.com"
+        await Usuario.deleteMany({correo : correo});
+
+        var mac = "00:00:00:00:00:00"
+        await Sensor.deleteMany({macSensor : mac});
+        var mac = "11"
+        await Sensor.deleteMany({macSensor : mac});
+    });
 
     // ....................................................
     // ....................................................
