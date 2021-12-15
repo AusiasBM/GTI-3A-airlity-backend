@@ -27,7 +27,7 @@ const mongoose =  require('mongoose');
 // y no como Decimal128.
 function med (val) {
     if (!val) return val;
-    return val.toString();
+    return parseFloat(val.toString());
   }
 
 const MedicionSchema = new mongoose.Schema ({

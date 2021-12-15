@@ -459,7 +459,136 @@
         }
         return 0;
     }
-    
 
+
+
+    //---------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------
+    // LÓGICA PARA OBTENER LA MEDIA GLOBAL Y LA DESVIACIÓN DE LAS MEDIDAS TOMADAS EN UN PERIODO DE TIEMPO DE TODOS LOS SENSORES
+    //---------------------------------------------------------------------------------
+    //---------------------------------------------------------------------------------
+
+    mediaGlobalMediciones(mediciones){
+        var n = 1
+        var sum = 0
+
+        for(var i = 0; i < mediciones.length; i++){
+            sum = sum +  mediciones[i].medida
+            console.log("Suma: " + (sum))
+            n++;
+    
+        }
+
+        console.log("Suma: " + sum)
+        
+        console.log("Cont: " + n)
+        return  sum/(n-1);    
+    }
+
+    sensoresQueHanEmitido(mediciones){
+        var sensores = [];
+
+        for(var i = 0; i < mediciones.length; i++){
+            
+            if(!sensores.includes( mediciones[i].macSensor )){
+                sensores.push(mediciones[i].macSensor)
+            }
+            
+        }
+
+        return sensores;
+    }
+
+    mediaYRegistroValoresNegativosOCeroEnMedicionesPorSensor(mediciones){
+        var n = 1;
+        var sum = 0;
+        var advertenciasSensores = [];
+
+        // Para saber si el sensor ha estado registrando valores negativos o 0 de forma irregular
+        // Si es de forma regular se verá que la media es 0 o < que 0...
+        var valorNegativoOCero = false;
+        var sensores = this.sensoresQueHanEmitido(mediciones);
+
+        console.log("Longitud de sensores: " + sensores.length);
+        for(var j = 0; j < sensores.length; j++){
+            for(var i = 0; i < mediciones.length; i++){
+                if(mediciones[i].macSensor == sensores[j]){
+                    if(mediciones[i].medida > 0){
+                        sum += mediciones[i].medida 
+                        n++;
+                    }else{
+                        valorNegativoOCero = true;
+                    }
+                   
+                }
+            }
+
+            console.log(sum)
+            console.log(n)
+
+            //añadimos a la lista la información de cada sensor con los posibles errores (para saber si la media está muy desviada se calcula posteriormente)
+            advertenciasSensores.push({
+                mediaGlobal: null,
+                sensor: sensores[j],
+                mediaSensor: sum/(n-1), // da el valor de la media de las mediciones de cada sensor
+                desviacionRespectoMediaGlobal:null,
+                limiteDesviacionSuperior: 0,
+                limiteDesviacionInferior: 0,
+                valoresIrregularesNoValidos: valorNegativoOCero, // true es que hay mediciones negativas o 0 
+                mediaDesviada:0 // 0 será que la media se encuentra en un rango aceptable; -1 cuando se encuentre muy por debajo de la media y 1 muy por encima
+            })
+
+            //Restauramos las condiciones para el siguiente sensor
+            sum = 0;
+            n = 1;
+            valorNegativoOCero = false;
+        }
+        
+        return advertenciasSensores;
+    }
+
+
+    desviacionEstandar(mediaGlobalMediciones, listaMediasSensores){
+
+        var sum = 0;
+
+
+console.log("Este es el NaN? " + listaMediasSensores.length)
+        for(var i = 0; i < listaMediasSensores.length; i++){
+
+            sum += Math.pow((listaMediasSensores[i].mediaSensor - mediaGlobalMediciones), 2);
+        }
+
+        console.log("Este es el NaN? " + Math.sqrt(sum/listaMediasSensores.length))
+        return Math.sqrt(sum/listaMediasSensores.length);
+    }
+
+
+    advertenciasMedicionesSensores(mediciones){
+        
+        var mediaGlobal = this.mediaGlobalMediciones(mediciones);
+        var listaAdvertenciasPorSensor = this.mediaYRegistroValoresNegativosOCeroEnMedicionesPorSensor(mediciones);
+        var desviacion = this.desviacionEstandar(mediaGlobal, listaAdvertenciasPorSensor);
+
+        for (var i = 0; i < listaAdvertenciasPorSensor.length; i++){
+
+            listaAdvertenciasPorSensor[i].mediaGlobal = mediaGlobal;
+            listaAdvertenciasPorSensor[i].desviacionRespectoMediaGlobal = desviacion;
+            listaAdvertenciasPorSensor[i].limiteDesviacionInferior = mediaGlobal - 2*desviacion;
+            listaAdvertenciasPorSensor[i].limiteDesviacionSuperior = mediaGlobal + 2*desviacion;
+            //Si la media de las medidas de un sensor es mayor a la media global mas 2 veces la desviación pondremos un 1
+            if(listaAdvertenciasPorSensor[i].mediaSensor > (mediaGlobal + 2*desviacion)){
+                listaAdvertenciasPorSensor[i].mediaDesviada = 1;
+
+                //Si la media de las medidas de un sensor es menor a la media global menos 2 veces la desviación pondremos un -1
+            }else if (listaAdvertenciasPorSensor[i].mediaSensor < (mediaGlobal - 2*desviacion)){
+                listaAdvertenciasPorSensor[i].mediaDesviada = -1;
+            }
+        }
+
+
+        return listaAdvertenciasPorSensor;
+
+    }
     
 }
