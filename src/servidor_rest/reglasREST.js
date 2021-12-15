@@ -37,7 +37,6 @@
 
 module.exports.cargar = function( servidorExpress, laLogica ) {
 
-
     // ------------------------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------------------------
     // Reglas mediciones
@@ -1057,6 +1056,38 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             
         }
     )//() post eliminar usuario
+
+
+    
+    servidorExpress.get(
+        '/scraping', /*verifyToken,*/
+        async function( peticion, respuesta){
+            console.log(" * GET/Scraping ")
+
+            var res;
+                
+            const request = require('request');
+
+            const options = {
+                url: 'https://webcat-web.gva.es/webcat_web/datosOnlineRvvcca/obtenerTablaPestanyaDatosOnline',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    "codigo": "46131002"
+                })
+            };
+            request(options, function(err, res, body) {
+                let json = JSON.parse(body);
+                console.log(json);
+                res = json;
+            });
+
+            respuesta.send(res)
+
+    })//get todasLasMediciones
+
 
 
 }
