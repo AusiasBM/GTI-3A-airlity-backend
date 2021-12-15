@@ -1068,23 +1068,24 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                 
             const request = require('request');
 
+            // Preparo la petición a la web de GVA
             const options = {
                 url: 'https://webcat-web.gva.es/webcat_web/datosOnlineRvvcca/obtenerTablaPestanyaDatosOnline',
-                method: 'POST',
+                method: 'POST', // Tiene que ser un post, aunque nosotros lo pongamos como get en la llamada
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    "codigo": "46131002"
+                    "codigo": "46131002" // Código de la estación de gandia
                 })
             };
+
+            // Envio la petición y espero a que me responda
             request(options, function(err, res, body) {
                 let json = JSON.parse(body);
                 console.log(json);
-                res = json;
+                respuesta.send(json)
             });
-
-            respuesta.send(res)
 
     })//get todasLasMediciones
 
