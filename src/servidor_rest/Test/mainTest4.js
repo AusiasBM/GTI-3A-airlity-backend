@@ -27,7 +27,7 @@ describe( "Test 1 : Recuerda arrancar el servidor", function() {
     before(async function() {
         // runs before each test in this block
 
-        //Añadimos antes de cada prueba este usuario 
+        //Creamos un usuario y hacemos el login con él para crear el token
         var usuario = 
             {
                 nombreUsuario : "test",
@@ -41,10 +41,21 @@ describe( "Test 1 : Recuerda arrancar el servidor", function() {
 
         await nuevoUsuario.save();
 
-        const nuevoSensor = new Sensor( {macSensor : String(usuario.macSensor), tipoMedicion: String("CO"), 
-            fechaRegistro: Date.now(), correoUsuario: String(usuario.correo)} );
+        datos = {"correo": "test@test.com", "contrasenya": "1234"}
 
-        await nuevoSensor.save();
+        request.post(
+            { url : IP_PUERTO+"/login", headers : { 'User-Agent' : 'airlity', 'Content-Type' : 'application/json' }, body : JSON.stringify( datos )},
+            function( err, respuesta ) {
+
+                console.log("Prova")
+                var j = JSON.parse(respuesta.body)
+                token = j.data.token;
+                console.log(token)
+ 
+                assert.equal( err, null, "¿ha habido un error?" )
+                assert.equal( respuesta.statusCode, 200, "¿El código no es 200 (OK)" )
+            } // callback
+        ) // .post
     });
     
     after(async function() {
@@ -53,13 +64,9 @@ describe( "Test 1 : Recuerda arrancar el servidor", function() {
         //Borramos el usuario creado después de cada prueba
         var correo =  "test@test.com"
         await Usuario.deleteMany({correo : correo});
-        var correo =  "testNode@node.com"
-        await Usuario.deleteMany({correo : correo});
 
-        var mac = "00:00:00:00:00:00"
-        await Sensor.deleteMany({macSensor : mac});
-        var mac = "11"
-        await Sensor.deleteMany({macSensor : mac});
+
+        token = null;
     });
 
     // ....................................................
@@ -67,7 +74,7 @@ describe( "Test 1 : Recuerda arrancar el servidor", function() {
     it( "probar POST /registrar", function( hecho ) {
        
         var datos = {"usuario":{"nombreUsuario":"testRegistro","correo":"testNode@node.com", "contrasenya":"123","telefono": 987654321},
-                    "sensor":{"macSensor": "00:00:00:00:00:00", "tipoMedicion":"C02"}}
+                    "sensor":{"macSensor": "00", "tipoMedicion":"C02"}}
 
         request.post(
             { url : IP_PUERTO+"/registrar", headers : { 'User-Agent' : 'airlity', 'Content-Type' : 'application/json' }, body : JSON.stringify( datos )},
@@ -92,11 +99,6 @@ describe( "Test 1 : Recuerda arrancar el servidor", function() {
             { url : IP_PUERTO+"/login", headers : { 'User-Agent' : 'airlity', 'Content-Type' : 'application/json' }, body : JSON.stringify( datos )},
             function( err, respuesta ) {
 
-                console.log("Prova")
-                var j = JSON.parse(respuesta.body)
-                token = j.data.token;
-                console.log(token)
- 
                 assert.equal( err, null, "¿ha habido un error?" )
                 assert.equal( respuesta.statusCode, 200, "¿El código no es 200 (OK)" )
                 hecho()
@@ -110,8 +112,8 @@ describe( "Test 1 : Recuerda arrancar el servidor", function() {
     // ....................................................
     it( "probar POST /mediciones", function( hecho ) {
         var datos = [
-            '{"macSensor":"00:00:00:00:00:00","tipoMedicion":"O3", "medida":123,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1234567890123}',
-            '{"macSensor":"00:00:00:00:00:00","tipoMedicion":"O3", "medida":456,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1234567890123}'
+            '{"macSensor":"00","tipoMedicion":"O3", "medida":123,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1234567890123}',
+            '{"macSensor":"00","tipoMedicion":"O3", "medida":456,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1234567890123}'
         ]
 
         request.post(
@@ -158,8 +160,10 @@ describe( "Test 1 : Recuerda arrancar el servidor", function() {
     // ....................................................
     // ....................................................
     it("probar POST /eliminarUsuario", function(hecho){
+        var datos = {"correo": "testNode@node.com"};
         request.post(
-            {url: IP_PUERTO + "/eliminarUsuario", headers : {'Authorization': token, 'User-Agent' : 'airlity', 'Content-Type' : 'application/json'}},
+        
+            {url: IP_PUERTO + "/eliminarUsuario", headers : {'Authorization': token, 'User-Agent' : 'airlity', 'Content-Type' : 'application/json'}, body :JSON.stringify( datos )},
             function(err, res){
                 assert.equal( err, null, "¿ha habido un error?" )
                 assert.equal( res.statusCode, 200, "¿El código no es 200 (OK)" )
@@ -172,7 +176,7 @@ describe( "Test 1 : Recuerda arrancar el servidor", function() {
     // ....................................................
     // ....................................................
     it("probar POST /eliminarSensor", function(hecho){
-        var datos = {"macSensor": "00:00:00:00:00:00"};
+        var datos = {"macSensor": "00"};
         request.post(
             {url: IP_PUERTO + "/eliminarSensor", headers : {'Authorization': token, 'User-Agent' : 'airlity', 'Content-Type' : 'application/json'}, body : JSON.stringify( datos )},
             function(err, res){

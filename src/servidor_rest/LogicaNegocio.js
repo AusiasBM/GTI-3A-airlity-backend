@@ -11,6 +11,7 @@
 
  const mongoose = require('mongoose');
  const Medicion = require("./modelos/Medicion");
+ const MedicionOficial = require("./modelos/MedicionOficial");
  const Sensor = require("./modelos/Sensor");
  const Usuario = require("./modelos/Usuario");
  const Poblacion = require("./modelos/Poblacion");
@@ -71,7 +72,8 @@ module.exports = class LogicaNegocio {
      * Descripción:
      * Por cada elemento del array de Texto es convertido a JSON y llama a guardarMedicion() para introducir en la bd
      * 
-     * @param medida Array de Textos JSON.
+     * @param idUsuario Texto con el id del usuario que ha medido 
+     * @param mediciones Array de Textos JSON.
      * 
      * @return En caso de guardarse correctamente en la bd no devuelve nada. En caso de producirse un error,
      *  devuelve el tipo de error producido.
@@ -152,6 +154,116 @@ module.exports = class LogicaNegocio {
             return 500
         }
     } // ()
+
+
+
+    /**
+     * guardarMedicionesOficiales()
+     * Descripción:
+     * Guarda las mediciones de las estaciones oficiales conseguidas mediante scraping
+     * 
+     * @param mediciones Array de JSON .
+     * 
+     * @return En caso de guardarse correctamente en la bd no devuelve nada. En caso de producirse un error,
+     *  devuelve el tipo de error producido.
+     * 
+     * mediciones: lista<JSON>
+     * [{
+        poblacion: string;
+        codigo: number;
+        fecha: number;
+        lat: number;
+        lng: number;
+        mediciones: [{
+                tipoMedicion: string;
+                medida: number;
+            }];
+        }]--> guardarMedicionesOficiales() -->
+     * 200 || 400 || 500
+     */
+     async guardarMedicionesOficiales( mediciones ){
+
+        
+        for(var i = 0; i < mediciones.length; i++){
+            
+            var poblacion = mediciones[i].poblacion;
+            var codigo = mediciones[i].codigo;
+            var latitud = mediciones[i].lat;
+            var longitud = mediciones[i].lng;
+            var fecha = mediciones[i].fecha;
+
+            for (var j = 0; j < mediciones[i].mediciones.length; j++){
+               
+                var tipoMedicion = mediciones[i].mediciones[j].tipoMedicion;
+                var medida = mediciones[i].mediciones[j].medida;
+                var res = await this.guardarMedicionOficial(poblacion, codigo, tipoMedicion, medida, fecha, latitud, longitud);
+
+                //Si da algún error enviar la respuesta inmediatamente
+                if(res == 400 || res == 500){
+                    return res;
+                }
+            }              
+        }
+
+        return 200
+    }
+
+
+
+    /**
+     * guardarMedicionOficial()
+     * Descripción:
+     * realiza una operación de inserción en la tabla MedicionOficials de la bd.
+     * 
+     * @param poblacion Texto con el nombre de la poblacion donde se encuentra la estacion
+     * @param codigo N con el código perteneciente a esa estación
+     * @param tipoMedicion Texto con el gas que mide
+     * @param medida Real con el valor de la medición
+     * @param fecha N con la fecha en milisegundos de cuando se ha realizado
+     * @param latitud R con latitud
+     * @param longitud R con la longitud 
+     * 
+     * 
+     * @return En caso de guardarse correctamente en la bd devuelve 200. En caso de producirse un error,
+     *  devuelve 400.
+     * 
+        poblacion :Texto,
+        codigo: N,
+        tipoMedicion:Texto,
+        medida: R,
+        fecha: N,
+        latitud: R,
+        longitud: R -> guardarMedicionOficial() ->
+        respuesta: 200 || 400 || 500 <-
+     * 
+     */
+    async guardarMedicionOficial( poblacion, codigo, tipoMedicion, medida, fecha, latitud, longitud ) {
+        
+        try {
+            
+            // Si creamos una lista con el mismo nombre que las clables del json, se añaden los valores automáticamente a cada variable            
+            if(poblacion && codigo && tipoMedicion && medida && fecha && latitud && longitud ){
+
+                const nuevaMedicion = new MedicionOficial( {poblacion: String(poblacion), codigo : codigo, tipoMedicion: String(tipoMedicion), medida : medida,
+                    fecha: fecha, latitud: latitud, longitud: longitud } );
+                console.log(nuevaMedicion)
+                
+                //Guardamos la nueva medición
+                await nuevaMedicion.save();
+
+                return 200
+
+            }else{
+                console.log("Error");
+                return 400     
+            }
+    
+        } catch (error) {
+            console.log("Error: " + error);
+            return 500
+        }
+    } // ()
+    
 
 
     /**
@@ -306,16 +418,31 @@ module.exports = class LogicaNegocio {
      *  devuelve 400.
      * 
      * 
-     * tipo: Texto -> getMedicionesPorTiempoZona() -->
-     *  lista[{
-        macSensor :Texto,
-        tipoMedicion:Texto,
-        medida: R,
-        temperatura: Z,
-        humedad: N
-        fecha: N,
-        latitud: R,
-        longitud: R}]  || 500
+     * posicionSO: JSON{latitud: R, longitud:R},
+     * posicionNE: JSON{latitud: R, longitud:R},
+     * fechaIni: N,
+     * fechaFin: N,
+     * tipoMedicion: Texto -> getMedicionesPorTiempoZona() <--
+     *  lista[
+     * usuarios: [{
+            macSensor :Texto,
+            tipoMedicion:Texto,
+            medida: R,
+            temperatura: Z,
+            humedad: N
+            fecha: N,
+            latitud: R,
+            longitud: R}]
+       oficiales: [{
+            poblacion:Texto,
+            codigo: N,
+            tipoMedicion: Texto,
+            medida: R,
+            fecha: N,
+            latitud: R,
+            longitud: R
+       }] 
+          || 500
      */
     async getMedicionesPorTiempoZona( posicionSO, posicionNE, fechaIni, fechaFin = 0, tipoMedicion ) {
 
@@ -326,9 +453,36 @@ module.exports = class LogicaNegocio {
                 console.log("Fecha final menor que inicial!!")
             }
             //Obtenemos las medidas en orden ascendente de fecha (sort -> 1): de más antiguas a mas recientes
-            const mediciones = await Medicion.find({latitud : { $gte: posicionSO.latitud, $lte: posicionNE.latitud}, longitud : { $gte: posicionSO.longitud, $lte: posicionNE.longitud},
+            const medicionesUsuarios = await Medicion.find({latitud : { $gte: posicionSO.latitud, $lte: posicionNE.latitud}, longitud : { $gte: posicionSO.longitud, $lte: posicionNE.longitud},
                  fecha: { $gte: fechaIni, $lte: fechaFin}, tipoMedicion: String(tipoMedicion)}).sort({'fecha': 1}).select(['-_id', '-__v']);
+            
+
+            const medicionesOficiales = await MedicionOficial.find({latitud : { $gte: posicionSO.latitud, $lte: posicionNE.latitud}, longitud : { $gte: posicionSO.longitud, $lte: posicionNE.longitud},
+                fecha: { $gte: fechaIni, $lte: fechaFin}, tipoMedicion: String(tipoMedicion)}).sort({'fecha': 1}).select(['-_id', '-__v']);
+
             console.log("hecho");
+
+            var mediciones = [];
+
+
+            for (var i = 0; i < medicionesUsuarios.length; i++){
+                //Evitemos que si son 0 o negativas no se representen en el mapa (evitar medidas erroneas)
+                if(medicionesUsuarios[i].medida > 0){
+                    mediciones.push({macSensor: medicionesUsuarios[i].macSensor, tipoMedicion: medicionesUsuarios[i].tipoMedicion, 
+                    medida: medicionesUsuarios[i].medida, fecha: medicionesUsuarios[i].fecha, latitud: medicionesUsuarios[i].latitud,
+                    longitud: medicionesUsuarios[i].longitud })
+                }
+               
+            }
+
+            for (var i = 0; i < medicionesOficiales.length; i++){
+                if(medicionesOficiales[i].medida > 0){
+                    mediciones.push({macSensor: medicionesOficiales[i].poblacion, tipoMedicion: medicionesOficiales[i].tipoMedicion, 
+                    medida: medicionesOficiales[i].medida, fecha: medicionesOficiales[i].fecha, latitud: medicionesOficiales[i].latitud,
+                    longitud: medicionesOficiales[i].longitud })
+                }
+            }
+
             return mediciones
         } catch (error) {
             console.log("Error: " + error);
@@ -403,6 +557,30 @@ module.exports = class LogicaNegocio {
             return 500
         }
     }
+
+    /**
+     * eliminarMedicionesOficialesPorMac()
+     * Descripción:
+     * realiza una operación borrado de medidas hechas por una estación
+     * 
+     * @param codigo N con el codigo de la estacion
+     * 
+     * 
+     * 
+     *  mac: Texto -> eliminarMedicionesPorMac() -->
+     */
+     async eliminarMedicionesOficialesPorCodigo(codigo){
+        try {
+            
+            await MedicionOficial.deleteMany({codigo : codigo});
+            console.log("hecho");
+            return 200
+        } catch (error) {
+        console.log("Error: " + error);
+            return 500
+        }
+    }
+
 
 
     /**
@@ -644,6 +822,28 @@ module.exports = class LogicaNegocio {
             return res;
 
         }catch(error){
+            return 500;
+        }
+    }
+
+
+    /**
+     * obtenerInformeMedicionesSensores()
+     * Descripción:
+     * Método para valorar si durante un periodo determinado los sensores que han estado emitiendo datos han registrado datos negativos,
+     * 0, y si la media de las mediciones de cada sensor ha estado muy por encima o por debajo de la media global para una zona geográfica 
+     * determinada.
+     * 
+     * @param {*} medicionesPorCiudadGasYPeriodo Lista de mediciones filtrada por una ciudad, tipo de gas y en un periodo de tiempo determiando
+     * 
+     * @returns Lista con la valoración de cada sensor
+     */
+    async obtenerInformeMedicionesSensores(medicionesPorCiudadGasYPeriodo){
+        try{
+            var res = this.estadisticas.advertenciasMedicionesSensores(medicionesPorCiudadGasYPeriodo);
+            return res;
+        }catch(error){
+            console.log(error)
             return 500;
         }
     }
