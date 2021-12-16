@@ -466,21 +466,20 @@ module.exports = class LogicaNegocio {
 
 
             for (var i = 0; i < medicionesUsuarios.length; i++){
-                //Evitemos que si son 0 o negativas no se representen en el mapa (evitar medidas erroneas)
-                if(medicionesUsuarios[i].medida > 0){
+                
                     mediciones.push({macSensor: medicionesUsuarios[i].macSensor, tipoMedicion: medicionesUsuarios[i].tipoMedicion, 
                     medida: medicionesUsuarios[i].medida, fecha: medicionesUsuarios[i].fecha, latitud: medicionesUsuarios[i].latitud,
                     longitud: medicionesUsuarios[i].longitud })
-                }
+                
                
             }
 
             for (var i = 0; i < medicionesOficiales.length; i++){
-                if(medicionesOficiales[i].medida > 0){
+                
                     mediciones.push({macSensor: medicionesOficiales[i].poblacion, tipoMedicion: medicionesOficiales[i].tipoMedicion, 
                     medida: medicionesOficiales[i].medida, fecha: medicionesOficiales[i].fecha, latitud: medicionesOficiales[i].latitud,
                     longitud: medicionesOficiales[i].longitud })
-                }
+                
             }
 
             return mediciones
