@@ -62,8 +62,8 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
 
            //* Datos de prueba
            var datos = [
-                '{"macSensor":"00:00:00:00:00:00","tipoMedicion":"O3", "medida":123,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1639514117864}',
-                '{"macSensor":"00:00:00:00:00:00","tipoMedicion":"O3", "medida":456,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1639514117864}'
+                '{"macSensor":"00:00:00:00:00:00","tipoMedicion":"O3", "medida":-123.1,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1639600728531}',
+                '{"macSensor":"00:00:00:00:00:00","tipoMedicion":"O3", "medida":456,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1639600728531}'
             ]//*/
             //A ver como estan organizados los datos...
             /*console.log( "datos" )
@@ -791,7 +791,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
 
             if(poblacion != 404 && poblacion != 500){
                 //Obtenemos los datos de la última hora (para que sea actual...)
-                var res = await laLogica.getMedicionesPorTiempoZona(poblacion.posicionSO, poblacion.posicionNE, Date.now() - 3600000, Date.now(), tipoMedicion);
+                var res = await laLogica.getMedicionesPorTiempoZona(poblacion.posicionSO, poblacion.posicionNE, 1/*Date.now() - 3600000*/, Date.now(), tipoMedicion);
 
                 console.log(res);
 

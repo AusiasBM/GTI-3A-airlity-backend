@@ -513,11 +513,13 @@
         for(var j = 0; j < sensores.length; j++){
             for(var i = 0; i < mediciones.length; i++){
                 if(mediciones[i].macSensor == sensores[j]){
+                    console.log("Negativo??: "+ mediciones[i].medida);
                     if(mediciones[i].medida > 0){
                         sum += mediciones[i].medida 
                         n++;
                     }else{
                         valorNegativoOCero = true;
+                        console.log("Negativo");
                     }
                    
                 }
@@ -525,6 +527,7 @@
 
             console.log(sum)
             console.log(n)
+            console.log(valorNegativoOCero);
 
             //añadimos a la lista la información de cada sensor con los posibles errores (para saber si la media está muy desviada se calcula posteriormente)
             advertenciasSensores.push({
@@ -551,15 +554,10 @@
     desviacionEstandar(mediaGlobalMediciones, listaMediasSensores){
 
         var sum = 0;
-
-
-console.log("Este es el NaN? " + listaMediasSensores.length)
         for(var i = 0; i < listaMediasSensores.length; i++){
 
             sum += Math.pow((listaMediasSensores[i].mediaSensor - mediaGlobalMediciones), 2);
         }
-
-        console.log("Este es el NaN? " + Math.sqrt(sum/listaMediasSensores.length))
         return Math.sqrt(sum/listaMediasSensores.length);
     }
 
