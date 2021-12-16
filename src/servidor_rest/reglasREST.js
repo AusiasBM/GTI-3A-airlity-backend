@@ -176,7 +176,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
      *  desde la tabla Mediciones con las ‘n’ últimas mediciones registradas.
      */
     servidorExpress.get(
-        '/ultimasMediciones/:cuantas', verifyToken,
+        '/ultimasMediciones/:cuantas', /*verifyToken,*/
         async function( peticion, respuesta){
             console.log(" * GET/ultimasMediciones ")
 
@@ -1172,9 +1172,11 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                 url: 'https://webcat-web.gva.es/webcat_web/datosOnlineRvvcca/obtenerTablaPestanyaDatosOnline',
                 method: 'POST', // Tiene que ser un post, aunque nosotros lo pongamos como get en la llamada
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    "User-Agent": 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0'
                 },
                 body: JSON.stringify({
+                    "estacionId": 5,
                     "codigo": "46131002" // Código de la estación de gandia
                 })
             };
@@ -1182,8 +1184,15 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             // Envio la petición y espero a que me responda
             request(options, function(err, res, body) {
                 let json = JSON.parse(body);
-                console.log(json);
+                //console.log(json);
+                console.log(json["listMediasHorariasTotales"].length)
+                
                 respuesta.send(json)
+
+                // var datos = [
+                //     {"poblacion":"Gandia","codigo": 123 , "fecha":1639513614185,"lat": 38.99586,"lng": -0.166152, "mediciones": [{"tipoMedicion": "O3", "medida": 56},{"tipoMedicion": "NO2", "medida": 5},{"tipoMedicion": "CO", "medida": 0.5},{"tipoMedicion": "SO2", "medida": 3}] },
+                //     {"poblacion":"Alcoi","codigo": 124 , "fecha":1639513614185,"lat": 2,"lng": 4, "mediciones": [{"tipoMedicion": "O3", "medida": 6},{"tipoMedicion": "NO2", "medida": 15},{"tipoMedicion": "CO", "medida": 20.5},{"tipoMedicion": "SO2", "medida": 5.5}] }
+                // ]
             });
 
     })//get todasLasMediciones
