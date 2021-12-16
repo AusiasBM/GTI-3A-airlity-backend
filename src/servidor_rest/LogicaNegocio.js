@@ -462,6 +462,9 @@ module.exports = class LogicaNegocio {
 
             console.log("hecho");
 
+            console.log(medicionesUsuarios);
+                
+
             var mediciones = [];
 
 
@@ -1105,18 +1108,18 @@ module.exports = class LogicaNegocio {
      * 
      *  correo: Texto,
      *  macSensor: Texto -> eliminarUsuario() -->
-     *
-     async actualizarDatosPersonalesUsuario(usuario){
+     */
+     async actualizarDatosPersonalesUsuario(idUsuario, usuario){
         
         try { 
-            await Usuario.findOneAndUpdate({ correo: String(usuario.correo) }, { nombreUsuario: String(usuario.nombreUsuario), telefono: String(usuario.telefono) });
+            await Usuario.findOneAndUpdate({ _id: String(idUsuario) }, { nombreUsuario: String(usuario.nombreUsuario), telefono: String(usuario.telefono) });
             console.log("hecho");
             return 200
         } catch (error) {
             console.log("Error: " + error);
             return 500
         }
-    }*/
+    }//*/
 
 
     

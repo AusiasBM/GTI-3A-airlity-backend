@@ -787,6 +787,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
 
             //Obtenemos las coordenadas de la cuadrícula que engloba la ciudad
             var poblacion = await laLogica.buscarPoblacion(nombreCiudad);
+            console.log(poblacion)
 
             if(poblacion != 404 && poblacion != 500){
                 //Obtenemos los datos de la última hora (para que sea actual...)
@@ -1126,6 +1127,37 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             
         }
     )//() post registrar usuario
+
+
+    /**
+     * POST /actualizarDatosUsuario
+     * -> Se le pasa en el cuerpo de la petición un JSON {nombreUsuario: Texto, correo: Texto, contrasenya:Texto, telefono: N}
+     * y llama al método registrarUsuario de la lógica de negocio para comprobar primero si el correo ya está registrado, y si 
+     * no lo está procede a guardar el usuario.
+     * 
+     */
+     servidorExpress.post(
+        '/actualizarDatosUsuario', verifyToken,
+        async function(peticion, respuesta){
+            console.log(" * POST/actualizarDatosUsuario ")
+
+            var id = peticion.token.id;
+
+            var datos = JSON.parse(peticion.body)
+
+            console.log(datos)
+            var res = await laLogica.actualizarDatosPersonalesUsuario(id, datos);
+
+            console.log(res)
+            if(res == 200){
+                respuesta.status(200).sendStatus(res);
+                console.log(res)
+            }else{
+                respuesta.status(res);
+            }
+            
+        }
+    )//() post eliminar usuario
 
 
     /**
