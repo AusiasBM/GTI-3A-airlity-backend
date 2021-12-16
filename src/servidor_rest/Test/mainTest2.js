@@ -37,6 +37,7 @@ describe( "Test: insertar un sensor, recuperar todos los sensores, buscar un sen
         //Borramos el sensor creado después de cada prueba
         var macPrueba1 = "00"
         await Sensor.deleteMany({macSensor : String(macPrueba1)});
+        
 
     });
 

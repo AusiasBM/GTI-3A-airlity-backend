@@ -18,7 +18,7 @@
         "jsonwebtoken": "^8.5.1",
         "mongoose": "^6.0.8",
         "path": "^0.12.7",
-        "request": "*",
+        "request": "^2.88.2",
         "sinon": "^12.0.1",
         "sqlite3": "*"
     },

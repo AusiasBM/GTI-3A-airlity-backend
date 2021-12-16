@@ -37,7 +37,6 @@
 
 module.exports.cargar = function( servidorExpress, laLogica ) {
 
-
     // ------------------------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------------------------
     // Reglas mediciones
@@ -54,19 +53,19 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
      * 
      */
     servidorExpress.post(
-        '/mediciones', verifyToken,
+        '/mediciones', /*verifyToken,*/
         async function( peticion, respuesta ){
             console.log( " * POST /mediciones" )
             console.log(peticion.body)
-            var datos =  peticion.body
+            //var datos =  peticion.body
 
-           /* Datos de prueba
+           //* Datos de prueba
            var datos = [
-                '{"macSensor":"00:00:00:00:00:00","tipoMedicion":"O3", "medida":123,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1234567890123}',
-                '{"macSensor":"00:00:00:00:00:00","tipoMedicion":"O3", "medida":456,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1234567890123}'
-            ]*/
+                '{"macSensor":"00:00:00:00:00:00","tipoMedicion":"O3", "medida":123,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1639514117864}',
+                '{"macSensor":"00:00:00:00:00:00","tipoMedicion":"O3", "medida":456,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1639514117864}'
+            ]//*/
             //A ver como estan organizados los datos...
-            console.log( "datos" )
+            /*console.log( "datos" )
             console.log( datos[0] )
 
             console.log( "datos2" )
@@ -75,8 +74,8 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             console.log( "datos3" )
             console.log( JSON.parse(datos[0]).medida )
            
-            var id = peticion.token.id;
-            //var id = 00;
+            var id = peticion.token.id;*/
+            var id = 22;
             console.log(id)
 
             var res = await laLogica.guardarMediciones(id, datos);
@@ -92,6 +91,54 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
         }
     ) // post mediciones
 
+
+     /**
+     * POST /medicionesOficiales 
+     * -> se envía a través del cuerpo de la petición un array JSON [{"poblacion": texto, "codigo": N, 
+     * fecha: entero, "lat": real, "lng": real, mediciones: [{ tipoMedicion: texto, medida: R}]} ]
+     * y se registra en la tabla MedicionesOficiales. 
+     * 
+     * 
+     */
+      servidorExpress.post(
+        '/medicionesOficiales',/* verifyToken,*/
+        async function( peticion, respuesta ){
+            console.log( " * POST /mediciones" )
+            //console.log(peticion.body)
+            //var datos =  JSON.parse(peticion.body)
+
+           //* Datos de prueba
+           var datos = [
+                {"poblacion":"Gandia","codigo": 123 , "fecha":1639513614185,"lat": 38.99586,"lng": -0.166152, "mediciones": [{"tipoMedicion": "O3", "medida": 56},{"tipoMedicion": "NO2", "medida": 5},{"tipoMedicion": "CO", "medida": 0.5},{"tipoMedicion": "SO2", "medida": 3}] },
+                {"poblacion":"Alcoi","codigo": 124 , "fecha":1639513614185,"lat": 2,"lng": 4, "mediciones": [{"tipoMedicion": "O3", "medida": 6},{"tipoMedicion": "NO2", "medida": 15},{"tipoMedicion": "CO", "medida": 20.5},{"tipoMedicion": "SO2", "medida": 5.5}] }
+            ]//*/
+            /*//A ver como estan organizados los datos...
+            console.log( "datos" )
+            console.log( datos[0] )
+
+            console.log( "datos2" )
+            console.log( JSON.parse(datos[0]) )
+
+            console.log( "datos3" )
+            console.log( JSON.parse(datos[0]).medida )
+           
+            var id = peticion.token.id;
+            //var id = 00;
+            console.log(id)*/
+
+            var res = await laLogica.guardarMedicionesOficiales(datos);
+            
+            console.log(res)
+            if(res == 200){
+                respuesta.status(200).send("Se ha dado de alta una nueva medida\n")
+            }else{
+                
+                respuesta.status(400).sendStatus(res)
+            }
+
+        }
+    )//post mediciones oficiles
+
     
 
     /**
@@ -101,7 +148,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
      *  Mediciones con todas las mediciones registradas.
      */
     servidorExpress.get(
-        '/todasLasMediciones', /*verifyToken,*/
+        '/todasLasMediciones', verifyToken,
         async function( peticion, respuesta){
             console.log(" * GET/todasLasMediciones ")
 
@@ -129,7 +176,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
      *  desde la tabla Mediciones con las ‘n’ últimas mediciones registradas.
      */
     servidorExpress.get(
-        '/ultimasMediciones/:cuantas', 
+        '/ultimasMediciones/:cuantas', /*verifyToken,*/
         async function( peticion, respuesta){
             console.log(" * GET/ultimasMediciones ")
 
@@ -171,7 +218,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
      * 
      */
     servidorExpress.get(
-        '/estadisticasMedicionesUsuario', /*verifyToken,*/
+        '/estadisticasMedicionesUsuario', verifyToken,
         async function(peticion, respuesta){
             console.log(' * GET/ estadisticasMedicionesUsuario?fechaIni=FechaInicial&fechaFin=FechaFinal')
 
@@ -456,7 +503,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
      * 
      */
     servidorExpress.get(
-        '/datosGraficaUsuario', /*verifyToken,*/ 
+        '/datosGraficaUsuario', verifyToken,
         async function(peticion, respuesta){
             console.log(' * GET/ datosGraficaUsuario?fechaIni=FechaInicial&fechaFin=FechaFinal')
 
@@ -873,6 +920,54 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
 
 
     /**
+     * GET /informeSensores -> se envía a través de la URL una query mac con la MAC del dispositivo requerido y devuelve un JSON 
+     * { macSensor: texto, nombreSensor: texto, uuid: texto, tipoMedicion: texto, fechaRegistro: Date, fechaUltimaMedicion: Date} 
+     * con los datos de ese sensor.
+     */
+     servidorExpress.get(
+        '/informeSensores', /*verifyToken,*/
+        async function( peticion, respuesta){
+            console.log(" * GET/informeSensores?ciudad=NombreCiudad&tipoMedicion=Gas ")
+            
+
+            var nombreCiudad = peticion.query.ciudad;
+            var tipoMedicion = peticion.query.tipoMedicion;
+            
+            var fechaActual = Date.now()
+            var fechaActualMenosCuatroHoras = 1 //fechaActual-14400000;
+            1636128765478
+            1234500000000
+
+            //Obtenemos las coordenadas de la cuadrícula que engloba la ciudad
+            var poblacion = await laLogica.buscarPoblacion(nombreCiudad);
+
+            if(poblacion != 404 && poblacion != 500){
+                //Obtenemos los datos de las últimas 4 horas para la ciudad determinada y tipo de gas
+                var res = await laLogica.getMedicionesPorTiempoZona(poblacion.posicionSO, poblacion.posicionNE, 1234500000000, fechaActual , tipoMedicion);
+
+                console.log(res);
+
+                if(res != 500){
+
+                var listaSensores = await laLogica.obtenerInformeMedicionesSensores(res);
+                console.log(listaSensores)
+
+                respuesta.send(listaSensores);
+                }else{
+                    respuesta.status(500).send("Ha habido un problema en el servidor");
+                }
+            }else{
+                respuesta.status(400).send("No se puede mostrar el informe");
+            }
+
+            
+    })//get informeSensores
+
+
+
+
+
+    /**
      * GET /sensoresInactivos -> se envía a través de la URL una query mac con la MAC del dispositivo requerido y devuelve un JSON 
      * { macSensor: texto, nombreSensor: texto, uuid: texto, tipoMedicion: texto, fechaRegistro: Date, fechaUltimaMedicion: Date} 
      * con los datos de ese sensor.
@@ -890,11 +985,14 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             }else{
                 //Ok
                 respuesta.status(200).send(res)
-            }
+            }     
+            
+    })//get sensoresInactivos
 
-            
-            
-    })//get sensor
+
+
+
+
 
     /**
      * POST /eliminarSensor -> se envía en el cuerpo de la petición un JSON con la mac del sensor que se quiere eliminar y
@@ -1042,10 +1140,10 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
         async function(peticion, respuesta){
             console.log(" * POST/eliminarUsuario ")
 
-            var id = peticion.token.id;
+            var correo = peticion.body.correo;
 
-            console.log(id)
-            var res = await laLogica.eliminarUsuario(id);
+            console.log(correo)
+            var res = await laLogica.eliminarUsuario(correo);
 
             console.log(res)
             if(res == 200){
@@ -1057,6 +1155,48 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             
         }
     )//() post eliminar usuario
+
+
+    
+    servidorExpress.get(
+        '/scraping', /*verifyToken,*/
+        async function( peticion, respuesta){
+            console.log(" * GET/Scraping ")
+
+            var res;
+                
+            const request = require('request');
+
+            // Preparo la petición a la web de GVA
+            const options = {
+                url: 'https://webcat-web.gva.es/webcat_web/datosOnlineRvvcca/obtenerTablaPestanyaDatosOnline',
+                method: 'POST', // Tiene que ser un post, aunque nosotros lo pongamos como get en la llamada
+                headers: {
+                    'Content-Type': 'application/json',
+                    "User-Agent": 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0'
+                },
+                body: JSON.stringify({
+                    "estacionId": 5,
+                    "codigo": "46131002" // Código de la estación de gandia
+                })
+            };
+
+            // Envio la petición y espero a que me responda
+            request(options, function(err, res, body) {
+                let json = JSON.parse(body);
+                //console.log(json);
+                console.log(json["listMediasHorariasTotales"].length)
+                
+                respuesta.send(json)
+
+                // var datos = [
+                //     {"poblacion":"Gandia","codigo": 123 , "fecha":1639513614185,"lat": 38.99586,"lng": -0.166152, "mediciones": [{"tipoMedicion": "O3", "medida": 56},{"tipoMedicion": "NO2", "medida": 5},{"tipoMedicion": "CO", "medida": 0.5},{"tipoMedicion": "SO2", "medida": 3}] },
+                //     {"poblacion":"Alcoi","codigo": 124 , "fecha":1639513614185,"lat": 2,"lng": 4, "mediciones": [{"tipoMedicion": "O3", "medida": 6},{"tipoMedicion": "NO2", "medida": 15},{"tipoMedicion": "CO", "medida": 20.5},{"tipoMedicion": "SO2", "medida": 5.5}] }
+                // ]
+            });
+
+    })//get todasLasMediciones
+
 
 
 }
