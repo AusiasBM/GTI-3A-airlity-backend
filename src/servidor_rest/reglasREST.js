@@ -1137,11 +1137,11 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
      * 
      */
      servidorExpress.post(
-        '/actualizarDatosUsuario', /*verifyToken,*/
+        '/actualizarDatosUsuario', verifyToken,
         async function(peticion, respuesta){
             console.log(" * POST/actualizarDatosUsuario ")
 
-            var id = 1//peticion.token.id;
+            var id = peticion.token.id;
 
             var datos = peticion.body
 
