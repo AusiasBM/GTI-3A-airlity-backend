@@ -464,6 +464,15 @@
     //---------------------------------------------------------------------------------
     //---------------------------------------------------------------------------------
 
+    
+    /**
+     * mediaGlobalMediciones()
+     * Descripcion:
+     * metodo para obtener la media global de un conjunto de mediciones
+     * 
+     * @param {*} mediciones lista de objetos con las mediciones de los sensores
+     * @returns R media de las mediciones
+     */
     mediaGlobalMediciones(mediciones){
         var n = 1
         var sum = 0
@@ -481,6 +490,15 @@
         return  sum/(n-1);    
     }
 
+
+    /**
+     * sensoresQueHanEmitido()
+     * Descripcion:
+     * metodo para obtener las mac de los sensores que han emitido a partir de una lista de mediciones
+     * 
+     * @param {*} mediciones lista de objetos con las mediciones de los sensores
+     * @returns Lista de Texto con las mac de los sensores
+     */
     sensoresQueHanEmitido(mediciones){
         var sensores = [];
 
@@ -495,6 +513,16 @@
         return sensores;
     }
 
+    /**
+     * mediaYRegistroValoresNegativosOCeroEnMedicionesPorSensor()
+     * Descripcion:
+     * metodo que saca la media realizada por cada sensor de un conjunto de mediciones, asi como
+     * si el sensor ha registrado valores negativos o 0.  
+     * 
+     * 
+     * @param {*} mediciones lista de objetos con las mediciones de los sensores 
+     * @returns lista con la media de cada sensor y booleano de si ha registrado valores negativos o 0
+     */
     mediaYRegistroValoresNegativosOCeroEnMedicionesPorSensor(mediciones){
         var n = 1;
         var sum = 0;
@@ -547,6 +575,15 @@
     }
 
 
+    /**
+     * desviacionEstandar()
+     * Descripcion:
+     * metodo que saca la desviacion estandar de las medidas respecto la media 
+     * 
+     * @param {*} mediaGlobalMediciones R con la media global de un conjunto de mediciones
+     * @param {*} listaMediasSensores Lista que contiene las medias de cada sensor
+     * @returns 
+     */
     desviacionEstandar(mediaGlobalMediciones, listaMediasSensores){
 
         var sum = 0;
@@ -558,6 +595,24 @@
     }
 
 
+    /**
+     * advertenciasMedicionesSensores()
+     * Descripcion:
+     * metodo que saca las advertencias a partir de la media de cada sensor, si ha registrado valores erroneos o 
+     * si la media esta muy desviada respecto la media global de ese periodo.
+     * 
+     * @param {*} mediciones 
+     * @returns Objeto {
+            mediaGlobal: any;
+            sensor: any;
+            mediaSensor: number;
+            desviacionRespectoMediaGlobal: any;
+            limiteDesviacionSuperior: number;
+            limiteDesviacionInferior: number;
+            valoresIrregularesNoValidos: boolean;
+            mediaDesviada: number;
+        }[]
+     */
     advertenciasMedicionesSensores(mediciones){
         
         var mediaGlobal = this.mediaGlobalMediciones(mediciones);
