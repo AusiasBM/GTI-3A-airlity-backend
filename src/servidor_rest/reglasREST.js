@@ -1439,7 +1439,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                     id: res._id,
                     rol: res.rol
                 }, process.env.TOKEN_SECRET,
-                { expiresIn: '1800s' })
+                { expiresIn: '86400s' })
                 
                 respuesta.header('auth-token', token).json({
                     error: null,
