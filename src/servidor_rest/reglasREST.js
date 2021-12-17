@@ -748,7 +748,8 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                 }     
             ]
 
-            var datosGrafica = laLogica.obtenerDatosParaGrafico(fechaIni, fechaFin, res)
+            var ini = Date.now() - 86300000;
+            var datosGrafica = laLogica.obtenerDatosParaGrafico(ini, Date.now(), res)
 
             //console.log(datosGrafica);
 
@@ -791,8 +792,330 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
 
             if(poblacion != 404 && poblacion != 500){
                 //Obtenemos los datos de la última hora (para que sea actual...)
-                var res = await laLogica.getMedicionesPorTiempoZona(poblacion.posicionSO, poblacion.posicionNE, 1/*Date.now() - 3600000*/, Date.now(), tipoMedicion);
+                //var res = await laLogica.getMedicionesPorTiempoZona(poblacion.posicionSO, poblacion.posicionNE,  Date.now()-86400000*8/*Date.now() - 3600000*/, Date.now(), tipoMedicion);
+                var res = [
+                    {
+                  "macSensor": "http://rootear.com/author/txaber-guereta",
+                  "tipoMedicion": "O3",
+                  "medida": 76,
+                  "fecha": 1639143098121,
+                  "latitud": 38.968664,
+                  "longitud": -0.180861
+                  },
+                    {
+                  "macSensor": "http://rootear.com/author/txaber-guereta",
+                  "tipoMedicion": "O3",
+                  "medida": 59,
+                  "fecha": 1639143098121,
+                  "latitud": 38.967024,
+                  "longitud": -0.181076
+                  },
+                    {
+                  "macSensor": "http://rootear.com/author/txaber-guereta",
+                  "tipoMedicion": "O3",
+                  "medida": 54,
+                  "fecha": 1639143098121,
+                  "latitud": 38.965589,
+                  "longitud":  -0.181091
+                  },
+                    {
+                  "macSensor": "http://rootear.com/author/txaber-guereta",
+                  "tipoMedicion": "O3",
+                  "medida": 43,
+                  "fecha": 1639143098121,
+                  "latitud": 38.964063,
+                  "longitud": -0.182647
+                  },
+                    {
+                  "macSensor": "http://rootear.com/author/txaber-guereta",
+                  "tipoMedicion": "O3",
+                  "medida": 153,
+                  "fecha": 1639143098121,
+                  "latitud": 38.965047,
+                  "longitud": -0.183642
+                  },
+                    {
+                  "macSensor": "http://www.codigos-qr.com",
+                  "tipoMedicion": "O3",
+                  "medida": 123,
+                  "fecha": 1639143098121,
+                  "latitud": 38.965675,
+                  "longitud": -0.183749
+                  },
+                    {
+                  "macSensor": "http://www.xataka.com",
+                  "tipoMedicion": "O3",
+                  "medida": 103,
+                  "fecha": 1639143098121,
+                  "latitud": 38.965738,
+                  "longitud": -0.184352
+                  },
+                    {
+                  "macSensor": "http://www.codigos-qr.com",
+                  "tipoMedicion": "O3",
+                  "medida": 120,
+                  "fecha": 1639143098121,
+                  "latitud": 38.965920,
+                  "longitud": 0.185489
+                  },
+                    {
+                  "macSensor": "http://www.xataka.com",
+                  "tipoMedicion": "O3",
+                  "medida": 115,
+                  "fecha": 1639143098121,
+                  "latitud": 38.966065,
+                  "longitud": -0.186496
+                  },
+                    {
+                  "macSensor": "http://rootear.com/author/txaber-guereta",
+                  "tipoMedicion": "O3",
+                  "medida": 103,
+                  "fecha": 1639143098121,
+                  "latitud": 38.966331,
+                  "longitud": -0.188037
+                  },
+                    {
+                  "macSensor": "http://www.codigos-qr.com",
+                  "tipoMedicion": "O3",
+                  "medida": 123,
+                  "fecha": 1639143098121,
+                  "latitud": 38.966352,
+                  "longitud": -0.188362
+                  },
+                    {
+                  "macSensor": "http://www.xataka.com",
+                  "tipoMedicion": "O3",
+                  "medida": 132,
+                  "fecha": 1639143098121,
+                  "latitud": 38.966494,
+                  "longitud": -0.188984
+                  },
+                    {
+                  "macSensor": "00:00:00:00:00:00",
+                  "tipoMedicion": "O3",
+                  "medida": 136,
+                  "fecha": 1639419932071,
+                  "latitud": 38.966494,
+                  "longitud":  -0.189478
+                  },
+                    {
+                  "macSensor": "00:00:00:00:00:00",
+                  "tipoMedicion": "O3",
+                  "medida": 146,
+                  "fecha": 1639419932071,
+                  "latitud": 38.966794,
+                  "longitud": -0.190540
+                  },
+                    {
+                  "macSensor": "Gandia",
+                  "tipoMedicion": "O3",
+                  "medida": 56,
+                  "fecha": 1639513614185,
+                  "latitud": 38.968214,
+                  "longitud": -0.191079
+                  },
+                  {
+                  "macSensor": "00:00:00:00:00:00",
+                  "tipoMedicion": "O3",
+                  "medida": 146,
+                  "fecha": 1639419932071,
+                  "latitud": 38.975481,
+                  "longitud": -0.182538
+                  },
+                  {
+                  "macSensor": "00:00:00:00:00:00",
+                  "tipoMedicion": "O3",
+                  "medida": 176,
+                  "fecha": 1639419932071,
+                  "latitud": 38.975481,
+                  "longitud": -0.182538
+                  },
+                  {
+                  "macSensor": "00:00:00:00:00:00",
+                  "tipoMedicion": "O3",
+                  "medida": 183,
+                  "fecha": 1639419932071,
+                  "latitud": 38.974760,
+                  "longitud": -0.182376
+                  },
+                  {
+                  "macSensor": "00:00:00:00:00:00",
+                  "tipoMedicion": "O3",
+                  "medida": 164,
+                  "fecha": 1639419932071,
+                  "latitud": 38.973103,
+                  "longitud": -0.181875
+                  },
+                  {
+                  "macSensor": "00:00:00:00:00:00",
+                  "tipoMedicion": "O3",
+                  "medida": 176,
+                  "fecha": 1639419932071,
+                  "latitud": 38.975998,
+                  "longitud": -0.182151
+                  },
+                  {
+                  "macSensor": "00:00:00:00:00:00",
+                  "tipoMedicion": "O3",
+                  "medida": 194,
+                  "fecha": 1639419932071,
+                  "latitud": 38.975784,
+                  "longitud": -0.179944
+                  },
+                  {
+                  "macSensor": "00:00:00:00:00:00",
+                  "tipoMedicion": "O3",
+                  "medida": 189,
+                  "fecha": 1639419932071,
+                  "latitud": 38.975584,
+                  "longitud": -0.178260
+                  },
+                  {
+                  "macSensor": "00:00:00:00:00:00",
+                  "tipoMedicion": "O3",
+                  "medida": 186,
+                  "fecha": 1639419932071,
+                  "latitud": 38.975233,
+                  "longitud": -0.176597
+                  },
+                  {
+                  "macSensor": "00:00:00:00:00:00",
+                  "tipoMedicion": "O3",
+                  "medida": 208,
+                  "fecha": 1639419932071,
+                  "latitud": 38.974833,
+                  "longitud":  -0.175223
+                  },
+                  {
+                  "macSensor": "00:00:00:00:00:00",
+                  "tipoMedicion": "O3",
+                  "medida": 195,
+                  "fecha": 1639419932071,
+                  "latitud": 38.974324,
+                  "longitud": -0.174258
+                  },
+                  {
+                  "macSensor": "http://rootear.com/author/txaber-guereta",
+                  "tipoMedicion": "O3",
+                  "medida": 123,
+                  "fecha": 1639143098121,
+                  "latitud": 38.9669053,
+                  "longitud": -0.1810745
+                  },
+                    {
+                  "macSensor": "http://rootear.com/author/txaber-guereta",
+                  "tipoMedicion": "O3",
+                  "medida": 123,
+                  "fecha": 1639143098121,
+                  "latitud": 38.9669053,
+                  "longitud": -0.1810745
+                  },
+                    {
+                  "macSensor": "http://rootear.com/author/txaber-guereta",
+                  "tipoMedicion": "O3",
+                  "medida": 123,
+                  "fecha": 1639143098121,
+                  "latitud": 38.9669053,
+                  "longitud": -0.1510745
+                  },
+                    {
+                  "macSensor": "http://rootear.com/author/txaber-guereta",
+                  "tipoMedicion": "O3",
+                  "medida": 123,
+                  "fecha": 1639143098121,
+                  "latitud": 38.9869053,
+                  "longitud": -0.1810745
+                  },
+                    {
+                  "macSensor": "http://rootear.com/author/txaber-guereta",
+                  "tipoMedicion": "O3",
+                  "medida": 123,
+                  "fecha": 1639143098121,
+                  "latitud": 38.9697862,
+                  "longitud": -0.1390964
+                  },
+                    {
+                  "macSensor": "http://www.codigos-qr.com",
+                  "tipoMedicion": "O3",
+                  "medida": 123,
+                  "fecha": 1639143098121,
+                  "latitud": 38.9663203,
+                  "longitud": -0.1886397
+                  },
+                    {
+                  "macSensor": "http://www.xataka.com",
+                  "tipoMedicion": "O3",
+                  "medida": 123,
+                  "fecha": 1639143098121,
+                  "latitud": 38.9951063,
+                  "longitud": -0.1659536
+                  },
+                    {
+                  "macSensor": "http://www.codigos-qr.com",
+                  "tipoMedicion": "O3",
+                  "medida": 123,
+                  "fecha": 1639143098121,
+                  "latitud": 38.9958526,
+                  "longitud": -0.1666134
+                  },
+                    {
+                  "macSensor": "http://www.xataka.com",
+                  "tipoMedicion": "O3",
+                  "medida": 123,
+                  "fecha": 1639143098121,
+                  "latitud": 38.9970533,
+                  "longitud": -0.1648753
+                  },
+                    {
+                  "macSensor": "http://rootear.com/author/txaber-guereta",
+                  "tipoMedicion": "O3",
+                  "medida": 123,
+                  "fecha": 1639143098121,
+                  "latitud": 38.9965032,
+                  "longitud": -0.1662111
+                  },
+                    {
+                  "macSensor": "http://www.codigos-qr.com",
+                  "tipoMedicion": "O3",
+                  "medida": 123,
+                  "fecha": 1639143098121,
+                  "latitud": 38.9968657,
+                  "longitud": -0.1634216
+                  },
+                    {
+                  "macSensor": "http://www.xataka.com",
+                  "tipoMedicion": "O3",
+                  "medida": 123,
+                  "fecha": 1639143098121,
+                  "latitud": 38.9974869,
+                  "longitud": -0.1642799
+                  },
+                    {
+                  "macSensor": "00:00:00:00:00:00",
+                  "tipoMedicion": "O3",
+                  "medida": 97,
+                  "fecha": 1639419932071,
+                  "latitud": 39.005,
+                  "longitud": -0.176152
+                  },
+                    {
+                  "macSensor": "00:00:00:00:00:00",
+                  "tipoMedicion": "O3",
+                  "medida": 146,
+                  "fecha": 1639419932071,
+                  "latitud": 38.99386,
+                  "longitud": -0.169152
+                  },
+                    {
+                  "macSensor": "Gandia",
+                  "tipoMedicion": "O3",
+                  "medida": 56,
+                  "fecha": 1639513614185,
+                  "latitud": 38.99586,
+                  "longitud": -0.166152
+                  }
 
+                  ]
                 console.log(res);
 
                 if(res!= 500){
@@ -936,8 +1259,8 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             
             var fechaActual = Date.now()
             var fechaActualMenosCuatroHoras = 1 //fechaActual-14400000;
-            1636128765478
-            1234500000000
+            //1636128765478
+            //1234500000000
 
             //Obtenemos las coordenadas de la cuadrícula que engloba la ciudad
             var poblacion = await laLogica.buscarPoblacion(nombreCiudad);
@@ -1150,6 +1473,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
 
             console.log(res)
             if(res == 200){
+                
                 respuesta.status(200).sendStatus(res);
                 console.log(res)
             }else{

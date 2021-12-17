@@ -31,7 +31,7 @@
  const conexionDB = async () => {
     try {
        // Cuando esté en producción hay que cambiar localhost por mongo
-        const DB = await mongoose.connect('mongodb://217.76.155.97:27080/airlity', { useUnifiedTopology: true, 
+        const DB = await mongoose.connect('mongodb://localhost:27017/airlity', { useUnifiedTopology: true, 
         useNewUrlParser: true});
         console.log("Conectado con Mongo, ", DB.connection.name);
        
@@ -620,7 +620,14 @@ module.exports = class LogicaNegocio {
     obtenerDatosParaGrafico(fechaIni, fechaFin, mediciones){
         
         try{
-            return this.estadisticas.sacarMediaMedicionesPorPeriodo(fechaIni, fechaFin, mediciones);
+            console.log("Entro a obtenerDatosParaGrafico")
+            console.log(fechaIni)
+            console.log(fechaFin)
+            console.log(mediciones)
+            var res = this.estadisticas.sacarMediaMedicionesPorPeriodo(fechaIni, fechaFin, mediciones);
+            console.log("Resultado ")
+            console.log(res)
+            return res
         }catch(error){
             return null;
         }

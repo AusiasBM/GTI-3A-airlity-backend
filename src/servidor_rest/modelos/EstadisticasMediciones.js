@@ -362,20 +362,16 @@
         var diferenciaTiempo = fechaFin - fechaIni;
 
         //Menos de 24 horas
-        if(diferenciaTiempo < 86400000){
+        if(diferenciaTiempo < 86400000*2){
             //Periodos de 10 minutos (se hará la media de los datos de cada 10 minutos)
-            return 10
+            return 30
 
             //Mas de un dia y menos de 72 horas
-        }else if(diferenciaTiempo >= 86400000 && diferenciaTiempo < 86400000*3){
+        }else if(diferenciaTiempo >= 86400000*2 && diferenciaTiempo < 86400000*6){
             //Periodos de 30 minutos
-            return 30
+            return 60
             
             //Mas de 3 dias y menos de 6 dias
-        }else if(diferenciaTiempo >= 86400000*3 && diferenciaTiempo < 86400000*6){
-            //Periodos de 60 minutos
-            return 60
-            //Mas de una semana (no se si llegaremos a tanto, por si acaso...)
         }else{
             //Periodos de 120 minutos
             return 120
