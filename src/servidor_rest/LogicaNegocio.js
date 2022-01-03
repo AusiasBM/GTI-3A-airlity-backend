@@ -84,11 +84,14 @@ module.exports = class LogicaNegocio {
      * 200 || 400 || 500
      */
     async guardarMediciones(idUsuario, mediciones){
-        var id = idUsuario;
         for(var i = 0; i < mediciones.length; i++){
             var medicion = JSON.parse(mediciones[i])
 
-            var res = await this.guardarMedicion(id, medicion)
+            //Obtenemos la delta del sensor para una posible correccion de la medicion
+            var sensor = await this.buscarSensor(medicion.macSensor);
+            var delta = sensor.delta;
+
+            var res = await this.guardarMedicion(idUsuario, medicion, delta)
 
             //Si da algún error enviar la respuesta inmediatamente
             if(res == 400 || res == 500){
@@ -109,7 +112,9 @@ module.exports = class LogicaNegocio {
      * Descripción:
      * realiza una operación de inserción en la tabla Medicion de la bd.
      * 
+     * @param {*} id Texto con el identificador del usuario guardado en la bbdd
      * @param req Objeto JSON con los datos que contiene cada medición.
+     * @param {*} delta R con el valor que modifica el valor de la medicion despues un proceso de recalibracion del sensor.
      * 
      * @return En caso de guardarse correctamente en la bd devuelve 200. En caso de producirse un error,
      *  devuelve 400.
@@ -127,15 +132,15 @@ module.exports = class LogicaNegocio {
         respuesta: 200 || 400 || 500 <-
      * 
      */
-    async guardarMedicion( id, req ) {
+    async guardarMedicion( id, req, delta ) {
         console.log(req)
         console.log(id)
         
         try {
             // Si creamos una lista con el mismo nombre que las clables del json, se añaden los valores automáticamente a cada variable            
-            if(id && req.macSensor && req.tipoMedicion && req.medida && req.temperatura && req.humedad && req.fecha && req.latitud && req.longitud ){
+            if(id && req.macSensor && req.tipoMedicion && req.medida && req.temperatura && req.humedad && req.fecha && req.latitud && req.longitud && delta){
 
-                const nuevaMedicion = new Medicion( {idUsuario: id, macSensor : String(req.macSensor), tipoMedicion: String(req.tipoMedicion), medida : req.medida, temperatura:req.temperatura,
+                const nuevaMedicion = new Medicion( {idUsuario: id, macSensor : String(req.macSensor), tipoMedicion: String(req.tipoMedicion), medida : (req.medida+delta), temperatura:req.temperatura,
                      humedad:req.humedad, fecha:req.fecha, latitud:req.latitud, longitud: req.longitud } );
                 console.log(nuevaMedicion)
                 
@@ -479,7 +484,7 @@ module.exports = class LogicaNegocio {
 
             for (var i = 0; i < medicionesOficiales.length; i++){
                 
-                    mediciones.push({macSensor: medicionesOficiales[i].poblacion, tipoMedicion: medicionesOficiales[i].tipoMedicion, 
+                    mediciones.push({macSensor: "EstOficial_" + medicionesOficiales[i].poblacion, tipoMedicion: medicionesOficiales[i].tipoMedicion, 
                     medida: medicionesOficiales[i].medida, fecha: medicionesOficiales[i].fecha, latitud: medicionesOficiales[i].latitud,
                     longitud: medicionesOficiales[i].longitud })
                 
@@ -633,15 +638,203 @@ module.exports = class LogicaNegocio {
         }
     }
 
+    //==================================================================================================
+    //==================================================================================================
+    // Logica de Corrección de mediciones de sensores (deltas)
+    //==================================================================================================
+    //==================================================================================================
 
 
 
+    /**
+     * getMedicionesOficialesUltimas24Horas():
+     * Descripcion:
+     * metodo para obtener una lista con todas las mediciones realizadas por las estaciones oficiales en las últimas 24 horas.
+     * 
+     * @returns medicionesOficiales Lista de JSON{poblacion: Texto, codigo: Texto, tipoMedicion: Texto, medida: R, fecha: N, latitud: R, longitud: R} 
+     *          con las mediciones hechas por estaciones oficiales || 500 (error del servidor)
+     */
+     async getMedicionesOficialesUltimas24Horas (){
+        console.log("Entra en getMedicionesOficialesUltimas24Horas");
+        try{
+            const medicionesOficiales = await MedicionOficial.find({fecha: { $gte: Date.now()-86400000, $lte: Date.now()}}).sort({'fecha': 1}).select(['-_id', '-__v']);
+
+            console.log(medicionesOficiales);
+
+            return medicionesOficiales;
+        }catch(error){
+            console.log("Error: " + error);
+            return 500;
+        }
+        
+    }
+
+
+    /**
+     * getMedicionesSensoresCercaEstacionOficial()
+     * Descripcion: 
+     * Metodo para obtener una lista de las mediciones del mismo tipo de gas que se han hecho cerca de una estacion oficial en un rango de 
+     * tiempo determinado. La cercania a la estación se define por una cuadricula donde la posicion Suroeste y Nordeste
+     * se separa 0.0005 grados respecto la coordenada de la estacion oficial, y el periodo comprende un rango temporal de 
+     * +- 30 minutos respecto la fecha de toma de la medicion oficial que se le pasa de parametro.
+     * 
+     * @param {*} medicionOficial Objeto con los datos de una medicion oficial {poblacion: Texto, codigo: Texto,
+     * tipoMedicion: Texto, medida: R, fecha: N, latitud: R, longitud: R}
+     * @returns Lista JSON{} {macSensor: Texto; tipoMedicion: Texto; medida: R; fecha: N; latitud: R; longitud: R}
+     * con las medidas del mismo tipo de gas que se encuentran dentro de la cuadricula tomadas con un periodo de +-30 minutos respecto de la fecha
+     * de la medicion oficial
+     */
+    async getMedicionesSensoresCercaEstacionOficial(medicionOficial){
+        console.log("Entra en getMedicionesSensoresCercaEstacionOficial");
+        try{
+            //Preparamos una cuadricula alrededor de la estacion oficial de distancia máxima de 70 metros desde el centro a los vertices de 
+            // la cuadricula (para estas latitudes...)
+            var posicionSO = {
+                latitud: medicionOficial.latitud - 0.0005,
+                longitud: medicionOficial + 0.0005
+            }
+    
+            var posicionNE = {
+                latitud: medicionOficial.latitud + 0.0005,
+                longitud: medicionOficial - 0.0005
+            }
+    
+            //Buscamos las mediciones hechas dentro de esa cuadricula con una diferencia de +-30 minutos
+            // respecto de la fecha de la medicion oficial que sean del mismo tipo de gas 
+            var medicionesCerca = await this.getMedicionesPorTiempoZona(posicionSO, posicionNE, medicionOficial.fecha - 1800000, medicionOficial.fecha + 1800000, 
+                medicionOficial.tipoMedicion);
+
+            return medicionesCerca;
+
+        }catch(error){
+
+            console.log("Error: " + error);
+            return 500;
+        }
+    }
 
 
 
+    /**
+     * obtenerDiferenciasEntreMedicionesOficialesSensores()
+     * Descripcion: 
+     * metodo que a partir de una lista de mediciones oficiales se obtiene un lista de los sensores que han pasado cerca en un periodo
+     * determinado de +-30 respecto a cada una de ellas y se calcula la diferencia entre la medicion del sensor y la medicion oficial,
+     * almacenandolas en un Map, cuya clave es la mac del sensor y el valor una lista con el sumatorio de las diferencias en la posicion 0 
+     * y el numero de veces que ese sensor ha medido cerca de una estacion en la posicion 1.
+     * 
+     * @param medicionesOficiales Lista de JSON con mediciones oficiales [{poblacion: Texto, codigo: Texto, tipoMedicion: Texto, medida: R, fecha: N, latitud: R, longitud: R}]
+     * @returns Map( Key: macSensor, Value : [sumatorioDiferencias, vecesQueHaMedidoCerca]
+     */
+    async obtenerDiferenciasEntreMedicionesOficialesSensores(medicionesOficiales){
+        console.log("Entra en obtenerDiferenciasEntreMedicionesOficialesSensores");
+
+        //Declaramos un Map con clave MAC del sensor y valor un array con la suma de las diferencias entre las medidas del sensor y 
+        // las oficiales, y el número de medidas hechas cerca de una estación oficial durante ese dia. Servira para sacar la media
+        // de esas diferencias que será el valor de la delta.
+        var diferenciaSensorMedidaOficial = new Map();
+
+        //Para cada medicion oficial obtenida queremos obtener las mediciones de los sensores que han pasado cerca en un periodo 
+        // de +- 30 minutos respecto a la fecha de obtención de la medida oficial.
+        medicionesOficiales.forEach(medicionOficial => {
+
+            //Guardamos el valor de la medida oficial
+            var valorMedidaOficial = medicionOficial.medida;
+
+            //Obtenemos todas las mediciones cercanas en ese periodo de tiempo (y para el tipo de gas que mide esa medicion)
+            var medicionesSensoresCerca =  this.getMedicionesSensoresCercaEstacionOficial(medicionOficial);
+
+            //Si hay alguna medicion, recorremos la lista de mediciones
+            medicionesSensoresCerca.forEach(medicionSensor => {
+
+                var diferencia = valorMedidaOficial - medicionSensor.medida
+
+                //Si aun no existe ese sensor en el Map(), lo creamos:
+                if(!diferenciaSensorMedidaOficial.has(medicionSensor.macSensor)){
+                    //El valor se compone de un array con el primer elemento el sumatorio de las diferencias, y el segundo el nº de veces que 
+                    // ha encontrado mediciones cerca de una estacion. Por defecto es 1, y si aparecen más se van sumando.
+                    var valor = [diferencia, 1];
+                    diferenciaSensorMedidaOficial.set(medicionSensor.macSensor, valor);
+                }else{
+                    var valor = diferenciaSensorMedidaOficial.get(medicionSensor.macSensor);
+                    valor[0] += diferencia;
+                    valor[1] ++;
+                    diferenciaSensorMedidaOficial.set(medicionSensor.macSensor, valor);
+                }
+               
+            });
+        });
+
+        return diferenciaSensorMedidaOficial;
+
+    }
+
+
+    /**
+     * calcularDeltas()
+     * Descripcion:
+     * Metodo en el que se obtiene primero una lista de mediciones oficiales de las utlimas 24h llamando al metodo
+     * getMedicionesOficialesUltimas24Horas(), y a continuacion se llama al metodo obtenerDiferenciasEntreMedicionesOficialesSensores()
+     * para sacar cada sensor que ha estado cerca de una estacion en las ultimas 24h junto con las veces que ha medido cerca de estas y el
+     * sumatorio de las diferencias entre las mediciones de las estaciones oficiales y las de los sensores, para calcular la media de 
+     * las diferencias y actualizar el valor de la delta del sensor.
+     * 
+     * 
+     */
+    async calcularDeltas(){
+        console.log("Entra en calcularDeltas");
+        //Obtenemos la lista de todas las mediciones oficiales realizadas en la últimas 24h (de todo tipo los gases)
+        var medicionesOficiales = await this.getMedicionesOficialesUltimas24Horas();
+
+
+        var mapaMacsValores = await this.obtenerDiferenciasEntreMedicionesOficialesSensores(medicionesOficiales);
+
+        for (let [key, value] of mapaMacsValores) {
+
+            //Dado que obtenerDiferenciasEntreMedicionesOficialesSensores() utiliza el metodo getMedicionesPorTiempoZona() de forma indirecta 
+            // para obtener todas las mediciones, y este incluye las mediciones oficiales, filtraremos la clave para que no busque las estaciones oficiales
+            // en la coleccion Sensor (no la encontraria) y descartamos posibles fallos en la busqueda en la bbdd. 
+            // Para comprender la expresion regular, ver getMedicionesPorTiempoZona()
+            if(!/^EstOficial_/.test(key)){
+                //El valor delta será la media de las diferencias 
+                var delta = value[0]/value[1];
+                await this.actualizarValorDeltaSensor(key, delta);
+            }
+            
+        }
+    }
 
 
 
+    /**
+     * actualizarValorDeltaSensor()
+     * Descripcion:
+     * Metodo que busca en la bbdd un sensor con la mac y actualiza el campo de la delta.
+     * 
+     * @param {*} macSensor texto con la mac del sensor
+     * @param {*} valorDelta R con el valor medio calculado de la delta
+     * @returns N con el codigo de si ha ido bien o no
+     */
+    async actualizarValorDeltaSensor( macSensor, valorDelta ){
+        console.log("Entra en actualizarValorDeltaSensor");
+        try { 
+            //sensor es el documento antes de actualizar la delta
+            var sensor = await Sensor.findOneAndUpdate({ macSensor: String(macSensor) }, { delta: valorDelta });
+
+            if(sensor.macSensor == macSensor){
+                console.log("hecho");
+                return 200
+            }
+
+            return 400
+           
+        } catch (error) {
+            console.log("Error: " + error);
+            return 500
+        }
+    }
+
+    
     
 
     //==================================================================================================

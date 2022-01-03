@@ -16,6 +16,7 @@ const path = require('path')
 const LogicaNegocio = require('./LogicaNegocio.js')
 const session = require('express-session')
 const jwt = require('jsonwebtoken');
+const tareaActualizacionDeltasSensores = require("./cronActualizacionDeltas.js")
 const port = 3500
 
 
@@ -26,7 +27,6 @@ async function main() {
 
     var laLogica = new LogicaNegocio();
     
-
     // Creo el servidor
     var app = express()
 
@@ -71,12 +71,16 @@ async function main() {
 
     // Arranco el servidor
     var servicio = app.listen( app.get("port"), function() {
+        tareaActualizacionDeltasSensores.iniciarTarea();
         console.log( "servidor REST escuchando en el puerto 3500")
     })
+
+    
 
     // capturo control-c para cerrar el servicio ordenadamente
     process.on("SIGINT", function() {
         console.log (" terminando ")
+        tareaActualizacionDeltasSensores.pararTarea();
         servicio.close ()
     })
 
