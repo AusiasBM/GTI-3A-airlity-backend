@@ -45,6 +45,11 @@ const SensorSchema = new Schema ({
     fechaRegistro:{
         type: Number,
         required: true
+    },
+    delta:{
+        type: Schema.Types.Decimal128,
+        required: false,
+        default: 0
     }
 
 });

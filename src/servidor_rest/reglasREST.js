@@ -53,17 +53,17 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
      * 
      */
     servidorExpress.post(
-        '/mediciones', /*verifyToken,*/
+        '/mediciones', verifyToken,
         async function( peticion, respuesta ){
             console.log( " * POST /mediciones" )
             console.log(peticion.body)
-            //var datos =  peticion.body
+            var datos =  peticion.body
 
-           //* Datos de prueba
+           /* Datos de prueba
            var datos = [
                 '{"macSensor":"00:00:00:00:00:00","tipoMedicion":"O3", "medida":-123.1,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1639600728531}',
                 '{"macSensor":"00:00:00:00:00:00","tipoMedicion":"O3", "medida":456,"temperatura": 10,"humedad": 100, "latitud":38.99586,"longitud":-0.166152,"fecha":1639600728531}'
-            ]//*/
+            ]*/
             //A ver como estan organizados los datos...
             /*console.log( "datos" )
             console.log( datos[0] )
@@ -73,9 +73,10 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
 
             console.log( "datos3" )
             console.log( JSON.parse(datos[0]).medida )
-           
-            var id = peticion.token.id;*/
-            var id = 22;
+            var id = 22;*/
+
+            var id = peticion.token.id;//*/
+            
             console.log(id)
 
             var res = await laLogica.guardarMediciones(id, datos);
@@ -101,13 +102,13 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
      * 
      */
       servidorExpress.post(
-        '/medicionesOficiales',/* verifyToken,*/
+        '/medicionesOficiales', verifyToken,
         async function( peticion, respuesta ){
             console.log( " * POST /mediciones" )
             //console.log(peticion.body)
             //var datos =  JSON.parse(peticion.body)
 
-           //* Datos de prueba
+           /* Datos de prueba
            var datos = [
                 {"poblacion":"Gandia","codigo": 123 , "fecha":1639513614185,"lat": 38.99586,"lng": -0.166152, "mediciones": [{"tipoMedicion": "O3", "medida": 56},{"tipoMedicion": "NO2", "medida": 5},{"tipoMedicion": "CO", "medida": 0.5},{"tipoMedicion": "SO2", "medida": 3}] },
                 {"poblacion":"Alcoi","codigo": 124 , "fecha":1639513614185,"lat": 2,"lng": 4, "mediciones": [{"tipoMedicion": "O3", "medida": 6},{"tipoMedicion": "NO2", "medida": 15},{"tipoMedicion": "CO", "medida": 20.5},{"tipoMedicion": "SO2", "medida": 5.5}] }
@@ -122,9 +123,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             console.log( "datos3" )
             console.log( JSON.parse(datos[0]).medida )
            
-            var id = peticion.token.id;
-            //var id = 00;
-            console.log(id)*/
+            */
 
             var res = await laLogica.guardarMedicionesOficiales(datos);
             
@@ -176,7 +175,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
      *  desde la tabla Mediciones con las ‘n’ últimas mediciones registradas.
      */
     servidorExpress.get(
-        '/ultimasMediciones/:cuantas', /*verifyToken,*/
+        '/ultimasMediciones/:cuantas', verifyToken,
         async function( peticion, respuesta){
             console.log(" * GET/ultimasMediciones ")
 
@@ -1249,7 +1248,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
      * con los datos de ese sensor.
      */
      servidorExpress.get(
-        '/informeSensores', /*verifyToken,*/
+        '/informeSensores', verifyToken,
         async function( peticion, respuesta){
             console.log(" * GET/informeSensores?ciudad=NombreCiudad&tipoMedicion=Gas ")
             
