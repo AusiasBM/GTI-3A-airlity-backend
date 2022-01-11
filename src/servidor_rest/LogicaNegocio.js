@@ -31,7 +31,7 @@
  const conexionDB = async () => {
     try {
        // Cuando esté en producción hay que cambiar localhost por mongo
-        const DB = await mongoose.connect('mongodb://217.76.155.97:27080/airlity', { useUnifiedTopology: true, 
+        const DB = await mongoose.connect('mongodb://localhost:27017/airlity', { useUnifiedTopology: true, 
         useNewUrlParser: true});
         console.log("Conectado con Mongo, ", DB.connection.name);
        
@@ -513,7 +513,7 @@ module.exports = class LogicaNegocio {
      * 
      *  cuantas: N,
         mac: Texto -> getUltimasMedicionesPorSensor() -->
-        lista[{
+        lista[{         <---
         idUsuario: Texto
         macSensor :Texto,
         tipoMedicion:Texto,
@@ -1312,9 +1312,15 @@ module.exports = class LogicaNegocio {
      async actualizarDatosPersonalesUsuario(idUsuario, usuario){
         
         try { 
-            await Usuario.findOneAndUpdate({ _id: String(idUsuario) }, { nombreUsuario: String(usuario.nombreUsuario), telefono: String(usuario.telefono) });
+            var usuario = await Usuario.findOneAndUpdate({ _id: String(idUsuario) }, { nombreUsuario: String(usuario.nombreUsuario), telefono: String(usuario.telefono) }, {
+                new: true
+              });
             console.log("hecho");
-            return 200
+            if (usuario != null){
+                return usuario
+            }
+            return 400
+            
         } catch (error) {
             console.log("Error: " + error);
             return 500

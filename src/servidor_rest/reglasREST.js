@@ -175,7 +175,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
      *  desde la tabla Mediciones con las ‘n’ últimas mediciones registradas.
      */
     servidorExpress.get(
-        '/ultimasMediciones/:cuantas', verifyToken,
+        '/ultimasMediciones/:cuantas',/* verifyToken,*/
         async function( peticion, respuesta){
             console.log(" * GET/ultimasMediciones ")
 
@@ -1423,7 +1423,8 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                 console.log("entra a body")
             }
 
-            console.log(datos)
+            console.log(datos.correo)
+            console.log(datos.contrasenya)
 
             //Comprobamos si el usuario ya está registrado y coincide con la contrasenya
             var res = await laLogica.buscarUsuario(datos.correo, datos.contrasenya);
@@ -1471,9 +1472,10 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             var res = await laLogica.actualizarDatosPersonalesUsuario(id, datos);
 
             console.log(res)
-            if(res == 200){
+            console.log("return")
+            if(res != 400 || res != 500){
                 
-                respuesta.status(200).sendStatus(res);
+                respuesta.status(200).send(res);
                 console.log(res)
             }else{
                 respuesta.status(res);
