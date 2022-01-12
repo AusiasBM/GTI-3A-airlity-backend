@@ -14,7 +14,7 @@ const LogicaNegocio = require('./LogicaNegocio.js')
 var laLogica = new LogicaNegocio()
 var task = cron.schedule('*/30 * * * * *', () => {
     console.log('running a task every 30 seconds');
-    laLogica.calcularDeltas();
+    //laLogica.calcularDeltas();
 
 
   },{

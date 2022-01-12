@@ -744,6 +744,7 @@ module.exports = class LogicaNegocio {
             //Obtenemos todas las mediciones cercanas en ese periodo de tiempo (y para el tipo de gas que mide esa medicion)
             var medicionesSensoresCerca =  this.getMedicionesSensoresCercaEstacionOficial(medicionOficial);
 
+            console.log(medicionesSensoresCerca);
             //Si hay alguna medicion, recorremos la lista de mediciones
             medicionesSensoresCerca.forEach(medicionSensor => {
 
@@ -782,6 +783,7 @@ module.exports = class LogicaNegocio {
      * 
      */
     async calcularDeltas(){
+        
         console.log("Entra en calcularDeltas");
         //Obtenemos la lista de todas las mediciones oficiales realizadas en la últimas 24h (de todo tipo los gases)
         var medicionesOficiales = await this.getMedicionesOficialesUltimas24Horas();
