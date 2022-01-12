@@ -37,8 +37,8 @@
          required: true,
      },
  
-     codigo : {
-         type: Number,
+     ciudad : {
+         type: String,
          required: true,
      },
  

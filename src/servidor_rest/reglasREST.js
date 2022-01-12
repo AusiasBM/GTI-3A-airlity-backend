@@ -106,7 +106,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
         async function( peticion, respuesta ){
             console.log( " * POST /mediciones" )
             //console.log(peticion.body)
-            //var datos =  JSON.parse(peticion.body)
+            var datos =  JSON.parse(peticion.body)
 
            /* Datos de prueba
            var datos = [
@@ -1514,46 +1514,68 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
     )//() post eliminar usuario
 
 
-    
     servidorExpress.get(
-        '/scraping', /*verifyToken,*/
+        '/medidasOficiales', /*verifyToken,*/
         async function( peticion, respuesta){
-            console.log(" * GET/Scraping ")
+            console.log(" * GET/medidaOficial ")
 
-            var res;
-                
+            var ciudad = 'Valencia';
+            var poblacion = 'Gandia';
+    
             const request = require('request');
-
-            // Preparo la petición a la web de GVA
+    
+            // Preparo la petición a la web de https://www.iqair.com/es/spain/
             const options = {
-                url: 'https://webcat-web.gva.es/webcat_web/datosOnlineRvvcca/obtenerTablaPestanyaDatosOnline',
-                method: 'POST', // Tiene que ser un post, aunque nosotros lo pongamos como get en la llamada
+                url: 'http://api.airvisual.com/v2/city?city=' + poblacion + '&state=' + ciudad + '&country=spain&key=c51a0e45-8730-42f8-8887-4c27796e1708',
+                method: 'GET', // Tiene que ser un post, aunque nosotros lo pongamos como get en la llamada
                 headers: {
                     'Content-Type': 'application/json',
                     "User-Agent": 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0'
-                },
-                body: JSON.stringify({
-                    "estacionId": 5,
-                    "codigo": "46131002" // Código de la estación de gandia
-                })
+                }
             };
-
+    
+    
             // Envio la petición y espero a que me responda
             request(options, function(err, res, body) {
                 let json = JSON.parse(body);
-                //console.log(json);
-                console.log(json["listMediasHorariasTotales"].length)
+                console.log(json);
                 
-                respuesta.send(json)
+            
+                var poblacion = json['data']['city'];
+                var ciudad = json['data']['state'];
+                var lat = json['data']['location']['coordinates'][1];
+                var lng = json['data']['location']['coordinates'][0];
+                var fecha = new Date(json['data']['current']['pollution']["ts"]);
+                var ica = json['data']['current']['pollution']["aqius"]; // Calidad del aire en unidades EE.UU
+                var temp = json['data']['current']['weather']["tp"]; // Temperatura en grados
+                var hu = json['data']['current']['weather']["hu"]; // Humedad en %
+                var pr = json['data']['current']['weather']["pr"]; // Presión en mb
+    
+    
+                var ciudad = [{"ciudad": ciudad, "poblacion": poblacion, "fecha": fecha.getTime(),"lat": lat,"lng": lng, "mediciones": [{"tipoMedicion": "ica", "medida": ica},{"tipoMedicion": "temp", "medida": temp},{"tipoMedicion": "hu", "medida": hu},{"tipoMedicion": "pr", "medida": pr}] }]
+                console.log(ciudad);
+                insertarMedidaOficial(ciudad);
+                respuesta.send(ciudad);
+                
 
-                // var datos = [
-                //     {"poblacion":"Gandia","codigo": 123 , "fecha":1639513614185,"lat": 38.99586,"lng": -0.166152, "mediciones": [{"tipoMedicion": "O3", "medida": 56},{"tipoMedicion": "NO2", "medida": 5},{"tipoMedicion": "CO", "medida": 0.5},{"tipoMedicion": "SO2", "medida": 3}] },
-                //     {"poblacion":"Alcoi","codigo": 124 , "fecha":1639513614185,"lat": 2,"lng": 4, "mediciones": [{"tipoMedicion": "O3", "medida": 6},{"tipoMedicion": "NO2", "medida": 15},{"tipoMedicion": "CO", "medida": 20.5},{"tipoMedicion": "SO2", "medida": 5.5}] }
-                // ]
+                // if(res == 200){
+                //     respuesta.send(ciudad);
+                //     //respuesta.status(200).send("Se ha dado de alta una nueva medida\n")
+                // }else{
+                    
+                //     respuesta.status(400).sendStatus(res)
+                // }
             });
+    
 
     })//get todasLasMediciones
 
+    async function insertarMedidaOficial(ciudad) {
+        
+        var res = await laLogica.guardarMedicionesOficiales(ciudad);
+                
+        
+    }
 
 
 }
