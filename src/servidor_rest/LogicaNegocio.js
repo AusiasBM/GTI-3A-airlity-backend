@@ -194,14 +194,14 @@ module.exports = class LogicaNegocio {
             var ciudad = mediciones[i].ciudad;
             var poblacion = mediciones[i].poblacion;
             var fecha = mediciones[i].fecha;
-            var lat = mediciones[i].lat;
-            var lng = mediciones[i].lng;
+            var latitud = mediciones[i].latitud;
+            var longitud = mediciones[i].longitud;
 
             for (var j = 0; j < mediciones[i].mediciones.length; j++){
                
                 var tipoMedicion = mediciones[i].mediciones[j].tipoMedicion;
                 var medida = mediciones[i].mediciones[j].medida;
-                var res = await this.guardarMedicionOficial(ciudad, poblacion, fecha, lat, lng, tipoMedicion, medida);
+                var res = await this.guardarMedicionOficial(ciudad, poblacion, fecha, latitud, longitud, tipoMedicion, medida);
 
                 //Si da algún error enviar la respuesta inmediatamente
                 if(res == 400 || res == 500){
@@ -242,15 +242,15 @@ module.exports = class LogicaNegocio {
         respuesta: 200 || 400 || 500 <-
      * 
      */
-    async guardarMedicionOficial( ciudad, poblacion, fecha, lat, lng, tipoMedicion, medida ) {
+    async guardarMedicionOficial( ciudad, poblacion, fecha, latitud, longitud, tipoMedicion, medida ) {
         
         try {
             
             // Si creamos una lista con el mismo nombre que las clables del json, se añaden los valores automáticamente a cada variable            
-            if(ciudad && poblacion && fecha && lat && lng && tipoMedicion && medida ){
+            if(ciudad && poblacion && fecha && latitud && longitud && tipoMedicion && medida ){
 
                 const nuevaMedicion = new MedicionOficial( {ciudad: String(ciudad), poblacion : String(poblacion), tipoMedicion: String(tipoMedicion), medida : medida,
-                    fecha: fecha, latitud: lat, longitud: lng } );
+                    fecha: fecha, latitud: latitud, longitud: longitud } );
                 console.log(nuevaMedicion)
                 
                 //Guardamos la nueva medición

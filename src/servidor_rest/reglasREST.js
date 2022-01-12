@@ -1543,8 +1543,8 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             
                 var poblacion = json['data']['city'];
                 var ciudad = json['data']['state'];
-                var lat = json['data']['location']['coordinates'][1];
-                var lng = json['data']['location']['coordinates'][0];
+                var latitud = json['data']['location']['coordinates'][1];
+                var longitud = json['data']['location']['coordinates'][0];
                 var fecha = new Date(json['data']['current']['pollution']["ts"]);
                 var ica = json['data']['current']['pollution']["aqius"]; // Calidad del aire en unidades EE.UU
                 var temp = json['data']['current']['weather']["tp"]; // Temperatura en grados
@@ -1552,7 +1552,7 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                 var pr = json['data']['current']['weather']["pr"]; // Presión en mb
     
     
-                var ciudad = [{"ciudad": ciudad, "poblacion": poblacion, "fecha": fecha.getTime(),"lat": lat,"lng": lng, "mediciones": [{"tipoMedicion": "ica", "medida": ica},{"tipoMedicion": "temp", "medida": temp},{"tipoMedicion": "hu", "medida": hu},{"tipoMedicion": "pr", "medida": pr}] }]
+                var ciudad = [{"ciudad": ciudad, "poblacion": poblacion, "fecha": fecha.getTime(),"latitud": latitud,"longitud": longitud, "mediciones": [{"tipoMedicion": "ica", "medida": ica},{"tipoMedicion": "temp", "medida": temp},{"tipoMedicion": "hu", "medida": hu},{"tipoMedicion": "pr", "medida": pr}] }]
                 console.log(ciudad);
                 insertarMedidaOficial(ciudad);
                 respuesta.send(ciudad);
