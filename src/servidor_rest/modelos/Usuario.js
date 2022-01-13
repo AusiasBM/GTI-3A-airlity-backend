@@ -31,12 +31,17 @@ const UsuarioSchema = new Schema ({
 
     nombreUsuario : {
         type: String,
-        required: true,
+        required: true
     },
 
     correo : {
         type: String,
         required: true,
+        validate: {
+            validator: function (v) {
+                return /^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$/.test(v)
+            }
+        }
     },
 
     contrasenya : {
@@ -58,7 +63,18 @@ const UsuarioSchema = new Schema ({
         type: String,
         default: "Usuario",
         required: true
+    },
+
+    verificacion:{
+        type: String
+    },
+
+    status:{
+        type: Boolean,
+        default: false,
+        required: true
     }
+
 
 });
 

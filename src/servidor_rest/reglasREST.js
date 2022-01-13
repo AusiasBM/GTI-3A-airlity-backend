@@ -9,8 +9,9 @@
  * 
  */
 
- const jwt = require('jsonwebtoken')
-
+const jwt = require('jsonwebtoken')
+const verificarCorreo = require("./Correo")
+//verificarCorreo("perette93@gmail.com", "Pere");
  // middleware to validate token (rutas protegidas)
  const verifyToken = (req, res, next) => {
     var token = req.headers['authorization']
@@ -1370,15 +1371,21 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
 
             var datos = peticion.body;
 
+            const verificationTokken = jwt.sign({usuario: usuario}, "verificationTokken");
+            datos.usuario.signInVerification = verificationTokken;
             var usuario = datos.usuario;
             var sensor = datos.sensor;
-
+            var correo = datos.usuario.correo;
+            //var verifiacion = datos.verifiacion;
+            console.log("pepinillo", datos)
+            
             //Llamamos a registrar en la lógica del negocio
             var res = await laLogica.registrar(usuario, sensor);
             console.log(res)
 
             if(res == 200){
                 respuesta.status(200).send("Se ha dado de alta un nuevo usuario\n");
+                verificarCorreo(correo, usuario);
             }else if(res == 400){
                 respuesta.status(400).send("Error: faltan parametros\n")
             }else if(res == "Error usuario"){

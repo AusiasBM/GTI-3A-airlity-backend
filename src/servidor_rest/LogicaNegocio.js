@@ -1090,8 +1090,9 @@ module.exports = class LogicaNegocio {
     async registrar(datosUsuario, datosSensor){
         try{
 
+            console.log(datosUsuario);
             var usuarioRegistrado = await this.registrarUsuario(datosUsuario.nombreUsuario, datosUsuario.correo, 
-                datosUsuario.contrasenya, datosUsuario.telefono, datosSensor.macSensor);
+                datosUsuario.contrasenya, datosUsuario.telefono,  datosSensor.macSensor, datosUsuario.signInVerification);
             console.log("Resultado1");
             console.log(usuarioRegistrado);
             console.log(datosUsuario.correo)
@@ -1152,7 +1153,7 @@ module.exports = class LogicaNegocio {
      *  telefono: N --> registrarUsuario() -->
      *  respuesta: 200 || 400 || 403 || 500  <--
      */
-    async registrarUsuario(nombreUsuario, correo, contrasenya, telefono, macSensor){
+    async registrarUsuario(nombreUsuario, correo, contrasenya, telefono, macSensor, tokken){
         try {
             
             //Comprobamos si este correo ya está registrado
@@ -1162,7 +1163,7 @@ module.exports = class LogicaNegocio {
             if(!usuarioYaRegistrado){
                 if( nombreUsuario && correo && contrasenya && telefono && macSensor){
                     const nuevoUsuario = new Usuario( {nombreUsuario : String(nombreUsuario), correo: String(correo),
-                         contrasenya: String(contrasenya), telefono: telefono, macSensor: String(macSensor)} );
+                         contrasenya: String(contrasenya), telefono: telefono, macSensor: String(macSensor), verificacion: String(tokken)} );
     
                     console.log(nuevoUsuario)
     
