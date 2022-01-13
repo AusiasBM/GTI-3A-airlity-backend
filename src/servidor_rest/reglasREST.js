@@ -1356,6 +1356,9 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
     // ------------------------------------------------------------------------------------------------
 
 
+
+
+
     /**
      * POST /registrar
      * -> Se le pasa en el cuerpo de la petición un JSON {usuario{nombreUsuario: Texto, correo: Texto, contrasenya:Texto, telefono: N},
@@ -1385,6 +1388,37 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
                 respuesta.status(403).send("Operación no autorizada: el usuario ya está registrado\n")
             }else if(res == "Error sensor"){
                 respuesta.status(403).send("Operación no autorizada: el sensor ya está registrado\n")
+            }else{
+                respuesta.status(500).sendStatus(res);
+            }
+            
+        }
+    )//() post registrar usuario
+
+
+    /**
+     * POST /registrar
+     * -> Se le pasa en el cuerpo de la petición un JSON {usuario{nombreUsuario: Texto, correo: Texto, contrasenya:Texto, telefono: N},
+     * sensor{macSensor: Texto, tipoMedicion: Texto}
+     * y llama al método registrar de la lógica de negocio para primero guardar el usuario y si se guarda de forma correcta registrar el sensor.
+     * 
+     */
+
+     servidorExpress.post(
+        '/verificar/:tokken',
+        async function(peticion, respuesta){
+            console.log(" * POST/verificar/:tokken")
+
+            var tokken = peticion.params.tokken;
+           
+            //Llamamos a registrar en la lógica del negocio
+            var res = await laLogica.verificarUsuario(tokken);
+            console.log(res)
+
+            if(res == 200){
+                respuesta.status(200).sendStatus(res);
+            }else if(res == 404){
+                respuesta.status(400).sendStatus(res);
             }else{
                 respuesta.status(500).sendStatus(res);
             }

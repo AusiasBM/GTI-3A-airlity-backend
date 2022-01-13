@@ -58,7 +58,17 @@ const UsuarioSchema = new Schema ({
         type: String,
         default: "Usuario",
         required: true
-    }
+    },
+
+     verificacio:{
+         type: String
+     },
+     
+     status:{
+         type:Boolean,
+         default:false,
+         required:true
+     }
 
 });
 

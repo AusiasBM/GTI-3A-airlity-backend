@@ -191,17 +191,17 @@ module.exports = class LogicaNegocio {
         
         for(var i = 0; i < mediciones.length; i++){
             
-            var ciudad = mediciones[i].ciudad;
             var poblacion = mediciones[i].poblacion;
+            var codigo = mediciones[i].codigo;
+            var latitud = mediciones[i].lat;
+            var longitud = mediciones[i].lng;
             var fecha = mediciones[i].fecha;
-            var latitud = mediciones[i].latitud;
-            var longitud = mediciones[i].longitud;
 
             for (var j = 0; j < mediciones[i].mediciones.length; j++){
                
                 var tipoMedicion = mediciones[i].mediciones[j].tipoMedicion;
                 var medida = mediciones[i].mediciones[j].medida;
-                var res = await this.guardarMedicionOficial(ciudad, poblacion, fecha, latitud, longitud, tipoMedicion, medida);
+                var res = await this.guardarMedicionOficial(poblacion, codigo, tipoMedicion, medida, fecha, latitud, longitud);
 
                 //Si da algún error enviar la respuesta inmediatamente
                 if(res == 400 || res == 500){
@@ -242,14 +242,14 @@ module.exports = class LogicaNegocio {
         respuesta: 200 || 400 || 500 <-
      * 
      */
-    async guardarMedicionOficial( ciudad, poblacion, fecha, latitud, longitud, tipoMedicion, medida ) {
+    async guardarMedicionOficial( poblacion, codigo, tipoMedicion, medida, fecha, latitud, longitud ) {
         
         try {
             
             // Si creamos una lista con el mismo nombre que las clables del json, se añaden los valores automáticamente a cada variable            
-            if(ciudad && poblacion && fecha && latitud && longitud && tipoMedicion && medida ){
+            if(poblacion && codigo && tipoMedicion && medida && fecha && latitud && longitud ){
 
-                const nuevaMedicion = new MedicionOficial( {ciudad: String(ciudad), poblacion : String(poblacion), tipoMedicion: String(tipoMedicion), medida : medida,
+                const nuevaMedicion = new MedicionOficial( {poblacion: String(poblacion), codigo : codigo, tipoMedicion: String(tipoMedicion), medida : medida,
                     fecha: fecha, latitud: latitud, longitud: longitud } );
                 console.log(nuevaMedicion)
                 
@@ -745,6 +745,7 @@ module.exports = class LogicaNegocio {
             var medicionesSensoresCerca =  this.getMedicionesSensoresCercaEstacionOficial(medicionOficial);
 
             console.log(medicionesSensoresCerca);
+
             //Si hay alguna medicion, recorremos la lista de mediciones
             medicionesSensoresCerca.forEach(medicionSensor => {
 
@@ -783,7 +784,6 @@ module.exports = class LogicaNegocio {
      * 
      */
     async calcularDeltas(){
-        
         console.log("Entra en calcularDeltas");
         //Obtenemos la lista de todas las mediciones oficiales realizadas en la últimas 24h (de todo tipo los gases)
         var medicionesOficiales = await this.getMedicionesOficialesUltimas24Horas();
@@ -1184,6 +1184,28 @@ module.exports = class LogicaNegocio {
         }
     }
 
+    /**
+     * verificarUsuario()
+     * 
+     * @param {*} tokken Texto
+     * @returns N
+     */
+    async verificarUsuario(tokken){
+        try{
+
+            const usuario = await Usuario.findOne({verificacion:String(tokken)}).select(['-__v']);
+
+            if(usuario){
+                await Usuario.findOneAndUpdate({verificacion:String(tokken) }, { status: true });
+                return 200
+            }
+            return 404
+
+        }catch(error){
+            console.log(error);
+            return 500;
+        }
+    }
 
     /**
      * buscarUsuario()
