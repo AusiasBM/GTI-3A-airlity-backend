@@ -1469,17 +1469,23 @@ module.exports.cargar = function( servidorExpress, laLogica ) {
             }else if (res == 500){
                 respuesta.status(500).sendStatus(res);
             }else{
-                const token = jwt.sign({
-                    id: res._id,
-                    rol: res.rol
-                }, process.env.TOKEN_SECRET,
-                { expiresIn: '86400s' })
+                if(res.status){
+                    const token = jwt.sign({
+                        id: res._id,
+                        rol: res.rol
+                    }, process.env.TOKEN_SECRET,
+                    { expiresIn: '86400s' })
+                    
+                    respuesta.header('auth-token', token).json({
+                        error: null,
+                        data: {token},
+                        datosUsuario: res
+                    })
+                }
+                else{
+                    respuesta.status(400).send("Usuario no verificado\n")
+                }
                 
-                respuesta.header('auth-token', token).json({
-                    error: null,
-                    data: {token},
-                    datosUsuario: res
-                })
             }
             
         }

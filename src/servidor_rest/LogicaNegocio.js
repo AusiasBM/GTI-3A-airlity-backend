@@ -1207,6 +1207,23 @@ module.exports = class LogicaNegocio {
         }
     }
 
+
+    async usuarioVerificado(correo){
+        try{
+
+            const usuario = await Usuario.findOne({correo:String(correo)}).select(['-__v']);
+
+            if(usuario.status){
+                return true
+            }
+            return false
+
+        }catch(error){
+            console.log(error);
+            return false;
+        }
+    }
+
     /**
      * buscarUsuario()
      * Descripción:
