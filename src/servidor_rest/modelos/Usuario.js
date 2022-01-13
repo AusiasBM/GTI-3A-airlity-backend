@@ -65,9 +65,10 @@ const UsuarioSchema = new Schema ({
         required: true
     },
 
-    verificacion:{
-        type: String
-    },
+     verificacion:{
+         type: String
+     },
+
 
     status:{
         type: Boolean,
